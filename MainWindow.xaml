@@ -1,0 +1,187 @@
+﻿<Window x:Class="TrabajoInterfacesFinal.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:TrabajoInterfacesFinal"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="450" Width="800">
+    <Window.Resources>
+        <Style x:Key="BotonMenu" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="#b8b6b4"/>
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="Height" Value="45"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            <Setter Property="Padding" Value="15,0,0,0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}">
+                            <ContentPresenter VerticalAlignment="Center" HorizontalAlignment="Left"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#3d4450"/>
+                    <Setter Property="Foreground" Value="White"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="BotonVerde" TargetType="Button">
+            <Setter Property="Background" Value="#5c7e10"/>
+            <Setter Property="Foreground" Value="#d2efa9"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="2">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#76a113"/>
+                    <Setter Property="Foreground" Value="White"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </Window.Resources>
+
+    <Grid>
+
+        <Grid x:Name="Grid_Login" Visibility="Visible" Panel.ZIndex="10" Background="#1b2838">
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Width="320">
+                <TextBlock Text="INICIAR SESIÓN" Foreground="White" FontSize="28" FontWeight="Bold" Margin="0,0,0,30" HorizontalAlignment="Left"/>
+
+                <TextBlock Text="NOMBRE DE CUENTA" Foreground="#1999ff" FontSize="12" FontWeight="Bold"/>
+                <TextBox x:Name="txtUserLogin" Height="35" Margin="0,5,0,15" Background="#323f53" Foreground="White" BorderThickness="0" Padding="5"/>
+
+                <TextBlock Text="CONTRASEÑA" Foreground="#1999ff" FontSize="12" FontWeight="Bold"/>
+                <PasswordBox x:Name="txtPassLogin" Height="35" Margin="0,5,0,25" Background="#323f53" Foreground="White" BorderThickness="0" Padding="5"/>
+
+                <Button Content="Iniciar sesión" Click="BtnLogin_Click" Height="45" Width="150" HorizontalAlignment="Left" Style="{StaticResource BotonVerde}"/>
+
+                <TextBlock x:Name="lblErrorLogin" Text="" Foreground="#c44343" Margin="0,15,0,0"/>
+            </StackPanel>
+        </Grid>
+
+
+        <Grid x:Name="Grid_Aplicacion" Visibility="Collapsed">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="220"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <Border Grid.Column="0" Background="#171a21">
+                <StackPanel>
+                    <Border Height="80" Background="#171a21" Margin="0,0,0,10">
+                        <TextBlock Text="STEAM CLONE" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="White" FontSize="20" FontWeight="Bold" />
+                    </Border>
+
+                    <Button Content="TIENDA" Click="Nav_Tienda_Click" Style="{StaticResource BotonMenu}"/>
+                    <Button Content="BIBLIOTECA" Click="Nav_Biblioteca_Click" Style="{StaticResource BotonMenu}"/>
+                    <Button Content="MI PERFIL" Click="Nav_Perfil_Click" Style="{StaticResource BotonMenu}"/>
+
+                    <Separator Background="#3d4450" Margin="10,20"/>
+
+                    <StackPanel Margin="15,0">
+                        <TextBlock x:Name="txtUsuarioMenu" Text="Usuario" Foreground="#66c0f4" FontWeight="Bold"/>
+                        <TextBlock x:Name="txtSaldoMenu" Text="Cartera: 100.00€" Foreground="#a3b3c1" Margin="0,5,0,0"/>
+                    </StackPanel>
+
+                    <Button Content="Cerrar Sesión" Click="BtnLogout_Click" Margin="15,50,15,0" Height="30" Background="#2a3f5a" Foreground="White" BorderThickness="0"/>
+                </StackPanel>
+            </Border>
+
+
+            <Grid Grid.Column="1" Background="#1b2838">
+
+                <Grid x:Name="Grid_Tienda" Visibility="Visible" Margin="20">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,20">
+                        <TextBox Width="250" Height="30" Background="#223a50" Foreground="White" BorderThickness="0" VerticalContentAlignment="Center" Text="Buscar en la tienda..." Padding="5"/>
+                        <Button Content="🔍" Width="30" Background="#67c1f5" BorderThickness="0"/>
+                        <ComboBox Width="150" Height="30" Margin="10,0" Background="#223a50">
+                            <ComboBoxItem Content="Todos los géneros" IsSelected="True"/>
+                            <ComboBoxItem Content="Acción"/>
+                            <ComboBoxItem Content="RPG"/>
+                        </ComboBox>
+                    </StackPanel>
+
+                    <ScrollViewer Grid.Row="1">
+                        <WrapPanel x:Name="PanelJuegos" Orientation="Horizontal">
+                        </WrapPanel>
+                    </ScrollViewer>
+                </Grid>
+
+
+                <Grid x:Name="Grid_Detalle" Visibility="Collapsed" Margin="30">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="2*"/>
+                        <ColumnDefinition Width="1*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0" Margin="0,0,20,0">
+                        <Button Content=" Volver a la Tienda" Click="Nav_Tienda_Click" Background="Transparent" Foreground="#66c0f4" BorderThickness="0" HorizontalAlignment="Left" Cursor="Hand" Margin="0,0,0,10"/>
+                        <TextBlock x:Name="txtDetalleTitulo" Text="TITULO DEL JUEGO" FontSize="36" Foreground="White" FontWeight="Bold"/>
+
+                        <Border Height="350" Background="Black" Margin="0,20">
+                            <TextBlock Text="IMAGEN DEL JUEGO" Foreground="Gray" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                        </Border>
+
+                        <TextBlock Text="ACERCA DE ESTE JUEGO" Foreground="White" FontSize="16" Margin="0,0,0,10"/>
+                        <TextBlock Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Este juego incluye gráficos increíbles y..." Foreground="#acb2b8" TextWrapping="Wrap"/>
+                    </StackPanel>
+
+                    <Border Grid.Column="1" Background="#14171e" CornerRadius="3" Height="200" VerticalAlignment="Top" Padding="15">
+                        <StackPanel>
+                            <TextBlock Text="Comprar este juego" Foreground="White" FontSize="18" Margin="0,0,0,15"/>
+                            <TextBlock x:Name="txtDetallePrecio" Text="59,99€" Background="Black" Foreground="#c6d4df" Padding="5" HorizontalAlignment="Right" Margin="0,0,0,10"/>
+
+                            <Button x:Name="btnComprar" Content="Añadir al Carro" Click="BtnComprar_Click" Height="40" Style="{StaticResource BotonVerde}"/>
+
+                            <StackPanel Orientation="Horizontal" Margin="0,15,0,0" HorizontalAlignment="Center">
+                                <TextBlock Text="Valoración: " Foreground="#8f98a0"/>
+                                <TextBlock Text="★★★★☆" Foreground="#66c0f4"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+
+
+                <Grid x:Name="Grid_Biblioteca" Visibility="Collapsed" Margin="20">
+                    <TextBlock Text="MIS JUEGOS" FontSize="24" Foreground="White" Margin="0,0,0,20"/>
+                    <ListBox x:Name="listaBiblioteca" Background="#161920" BorderThickness="0" Foreground="#dcdedf" Margin="0,40,0,0">
+                    </ListBox>
+                </Grid>
+
+
+                <Grid x:Name="Grid_Perfil" Visibility="Collapsed" Margin="40">
+                    <StackPanel>
+                        <TextBlock Text="EDITAR PERFIL" FontSize="24" Foreground="White" Margin="0,0,0,30"/>
+
+                        <TextBlock Text="Nombre de Perfil" Foreground="#66c0f4"/>
+                        <TextBox x:Name="txtEditUser" Background="#2a3f5a" Foreground="White" Height="30" Margin="0,5,0,20" BorderThickness="0"/>
+
+                        <TextBlock Text="Correo Electrónico" Foreground="#66c0f4"/>
+                        <TextBox Text="usuario@ejemplo.com" Background="#2a3f5a" Foreground="White" Height="30" Margin="0,5,0,20" BorderThickness="0"/>
+
+                        <Button Content="Guardar Cambios" Width="150" Height="40" HorizontalAlignment="Left" Style="{StaticResource BotonVerde}" Click="BtnGuardarPerfil_Click"/>
+                    </StackPanel>
+                </Grid>
+
+            </Grid>
+        </Grid>
+    </Grid>
+</Window>
