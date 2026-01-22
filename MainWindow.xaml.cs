@@ -4,6 +4,8 @@ using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using Microsoft.EntityFrameworkCore;
+using System.Linq;
 
 namespace TrabajoInterfacesFinal
 {
@@ -13,8 +15,6 @@ namespace TrabajoInterfacesFinal
         // 1. VARIABLES Y LISTAS GLOBALES
         // =========================================================
         #region Variables Globales
-
-        decimal saldo = 100.00m;
 
         // Listas de datos
         List<DatosJuego> biblioteca = new List<DatosJuego>();
@@ -27,6 +27,9 @@ namespace TrabajoInterfacesFinal
         // Variable temporal para detalle
         DatosJuego juegoActualEnDetalle = new DatosJuego();
 
+        // Usuario actual logueado
+        Usuario usuarioActual;
+
         #endregion
 
         // =========================================================
@@ -35,6 +38,24 @@ namespace TrabajoInterfacesFinal
         public MainWindow()
         {
             InitializeComponent();
+            
+            using (var db = new AppDbContext())
+            {
+                db.Database.EnsureCreated();
+                
+                if (!db.Usuarios.Any())
+                {
+                    db.Usuarios.Add(new Usuario 
+                    { 
+                        Nombre = "Admin",
+                        Email = "admin@steam.com",
+                        Contraseña = "1234",
+                        Saldo = 100.00m
+                    });
+                    db.SaveChanges();
+                }
+            }
+            
             CargarJuegosEnTienda();
             ActualizarSaldoVisual();
         }
@@ -52,6 +73,7 @@ namespace TrabajoInterfacesFinal
             Grid_Perfil.Visibility = Visibility.Collapsed;
             Grid_Carrito.Visibility = Visibility.Collapsed;
             Grid_Login.Visibility = Visibility.Collapsed;
+            Grid_Registro.Visibility = Visibility.Collapsed;
         }
 
         private void Nav_Tienda_Click(object sender, RoutedEventArgs e)
@@ -77,7 +99,10 @@ namespace TrabajoInterfacesFinal
         {
             OcultarTodas();
             Grid_Perfil.Visibility = Visibility.Visible;
-            lblSaldoPerfil.Text = $"{saldo}€"; // Actualizar visualmente al entrar
+            if (usuarioActual != null)
+            {
+                lblSaldoPerfil.Text = $"{usuarioActual.Saldo}€";
+            }
             ActualizarCombosMetodos();
         }
 
@@ -95,21 +120,131 @@ namespace TrabajoInterfacesFinal
         // =========================================================
         #region Login
 
-        private void BtnLogin_Click(object sender, RoutedEventArgs e) //FRANCISCO TRABAJA
+        private void BtnLogin_Click(object sender, RoutedEventArgs e)
         {
             if (txtUserLogin.Text.Length > 0 && txtPassLogin.Password.Length > 0)
             {
-                txtUsuarioMenu.Text = txtUserLogin.Text;
-                txtEditUser.Text = txtUserLogin.Text;
-                ActualizarSaldoVisual();
+                using (var db = new AppDbContext())
+                {
+                    var usuario = db.Usuarios.FirstOrDefault(u => 
+                        u.Nombre == txtUserLogin.Text && 
+                        u.Contraseña == txtPassLogin.Password);
 
-                OcultarTodas();
-                Grid_Aplicacion.Visibility = Visibility.Visible;
-                Grid_Tienda.Visibility = Visibility.Visible; // Ir a tienda por defecto
+                    if (usuario != null)
+                    {
+                        usuarioActual = usuario;
+                        txtUsuarioMenu.Text = usuario.Nombre;
+                        txtEditUser.Text = usuario.Nombre;
+                        ActualizarSaldoVisual();
+
+                        OcultarTodas();
+                        Grid_Aplicacion.Visibility = Visibility.Visible;
+                        Grid_Tienda.Visibility = Visibility.Visible;
+                        
+                        lblErrorLogin.Text = "";
+                        txtUserLogin.Text = "";
+                        txtPassLogin.Password = "";
+                    }
+                    else
+                    {
+                        lblErrorLogin.Text = "Usuario o contraseña incorrectos";
+                    }
+                }
             }
             else
             {
                 lblErrorLogin.Text = "Introduce usuario y contraseña";
+            }
+        }
+
+        private void BtnMostrarRegistro_Click(object sender, RoutedEventArgs e)
+        {
+            Grid_Login.Visibility = Visibility.Collapsed;
+            Grid_Registro.Visibility = Visibility.Visible;
+            lblErrorRegistro.Text = "";
+        }
+
+        private void BtnMostrarLogin_Click(object sender, RoutedEventArgs e)
+        {
+            Grid_Registro.Visibility = Visibility.Collapsed;
+            Grid_Login.Visibility = Visibility.Visible;
+            lblErrorLogin.Text = "";
+        }
+
+        private void BtnRegistrar_Click(object sender, RoutedEventArgs e)
+        {
+            string nombre = txtNombreRegistro.Text.Trim();
+            string email = txtEmailRegistro.Text.Trim();
+            string pass = txtPassRegistro.Password;
+            string passConfirmar = txtPassConfirmarRegistro.Password;
+
+            if (string.IsNullOrEmpty(nombre) || string.IsNullOrEmpty(email) || 
+                string.IsNullOrEmpty(pass) || string.IsNullOrEmpty(passConfirmar))
+            {
+                lblErrorRegistro.Text = "Todos los campos son obligatorios";
+                return;
+            }
+
+            if (nombre.Length < 3)
+            {
+                lblErrorRegistro.Text = "El nombre debe tener al menos 3 caracteres";
+                return;
+            }
+
+            if (!email.Contains("@") || !email.Contains("."))
+            {
+                lblErrorRegistro.Text = "Introduce un email válido";
+                return;
+            }
+
+            if (pass.Length < 4)
+            {
+                lblErrorRegistro.Text = "La contraseña debe tener al menos 4 caracteres";
+                return;
+            }
+
+            if (pass != passConfirmar)
+            {
+                lblErrorRegistro.Text = "Las contraseñas no coinciden";
+                return;
+            }
+
+            using (var db = new AppDbContext())
+            {
+                var usuarioExistente = db.Usuarios.FirstOrDefault(u => u.Nombre == nombre);
+                if (usuarioExistente != null)
+                {
+                    lblErrorRegistro.Text = "El nombre de usuario ya existe";
+                    return;
+                }
+
+                var emailExistente = db.Usuarios.FirstOrDefault(u => u.Email == email);
+                if (emailExistente != null)
+                {
+                    lblErrorRegistro.Text = "El email ya está registrado";
+                    return;
+                }
+
+                Usuario nuevoUsuario = new Usuario
+                {
+                    Nombre = nombre,
+                    Email = email,
+                    Contraseña = pass
+                };
+
+                db.Usuarios.Add(nuevoUsuario);
+                db.SaveChanges();
+
+                MessageBox.Show("¡Cuenta creada exitosamente!", "Registro Completado", MessageBoxButton.OK, MessageBoxImage.Information);
+
+                txtNombreRegistro.Text = "";
+                txtEmailRegistro.Text = "";
+                txtPassRegistro.Password = "";
+                txtPassConfirmarRegistro.Password = "";
+
+                Grid_Registro.Visibility = Visibility.Collapsed;
+                Grid_Login.Visibility = Visibility.Visible;
+                lblErrorLogin.Text = "";
             }
         }
 
@@ -118,6 +253,8 @@ namespace TrabajoInterfacesFinal
             Grid_Aplicacion.Visibility = Visibility.Collapsed;
             Grid_Login.Visibility = Visibility.Visible;
             txtPassLogin.Password = "";
+            txtUserLogin.Text = "";
+            usuarioActual = null;
         }
 
         #endregion
@@ -293,14 +430,24 @@ namespace TrabajoInterfacesFinal
             decimal total = 0;
             foreach (var item in carrito) total += item.Precio;
 
-            if (saldo >= total)
+            if (usuarioActual.Saldo >= total)
             {
-                saldo -= total;
+                usuarioActual.Saldo -= total;
+                
+                using (var db = new AppDbContext())
+                {
+                    var usuario = db.Usuarios.Find(usuarioActual.Id);
+                    if (usuario != null)
+                    {
+                        usuario.Saldo = usuarioActual.Saldo;
+                        db.SaveChanges();
+                    }
+                }
+                
                 ActualizarSaldoVisual();
 
                 foreach (var item in carrito) biblioteca.Add(item);
 
-                // Generar Factura
                 GenerarFacturaTXT(new List<DatosJuego>(carrito), total);
 
                 carrito.Clear();
@@ -362,9 +509,20 @@ namespace TrabajoInterfacesFinal
 
             if (decimal.TryParse(txtCantidadRecarga.Text, out decimal cantidad) && cantidad > 0)
             {
-                saldo += cantidad;
+                usuarioActual.Saldo += cantidad;
+                
+                using (var db = new AppDbContext())
+                {
+                    var usuario = db.Usuarios.Find(usuarioActual.Id);
+                    if (usuario != null)
+                    {
+                        usuario.Saldo = usuarioActual.Saldo;
+                        db.SaveChanges();
+                    }
+                }
+                
                 ActualizarSaldoVisual();
-                lblSaldoPerfil.Text = $"{saldo}€";
+                lblSaldoPerfil.Text = $"{usuarioActual.Saldo}€";
                 MessageBox.Show($"¡Recarga de {cantidad}€ realizada!");
             }
             else
@@ -375,7 +533,10 @@ namespace TrabajoInterfacesFinal
 
         private void ActualizarSaldoVisual()
         {
-            txtSaldoMenu.Text = $"Cartera: {saldo}€";
+            if (usuarioActual != null)
+            {
+                txtSaldoMenu.Text = $"Cartera: {usuarioActual.Saldo}€";
+            }
         }
 
         #endregion
@@ -415,7 +576,7 @@ namespace TrabajoInterfacesFinal
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Error al factura: " + ex.Message);
+                MessageBox.Show("Error al generar factura: " + ex.Message);
             }
         }
 
@@ -436,7 +597,36 @@ namespace TrabajoInterfacesFinal
     {
         public string Nombre { get; set; }
         public string Tipo { get; set; }
-        // Esto hace que el ComboBox muestre el texto bonito automáticamente
         public override string ToString() { return $"{Tipo}: {Nombre}"; }
+    }
+
+    public class Usuario
+    {
+        public int Id { get; set; }
+        public string Nombre { get; set; }
+        public string Email { get; set; }
+        public string Contraseña { get; set; }
+        public decimal Saldo { get; set; } = 100.00m;
+    }
+
+    public class AppDbContext : DbContext
+    {
+        public DbSet<Usuario> Usuarios { get; set; }
+
+        protected override void OnConfiguring(DbContextOptionsBuilder options)
+        {
+            options.UseSqlite("Data Source=usuarios.db");
+        }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<Usuario>()
+                .HasIndex(u => u.Nombre)
+                .IsUnique();
+
+            modelBuilder.Entity<Usuario>()
+                .HasIndex(u => u.Email)
+                .IsUnique();
+        }
     }
 }

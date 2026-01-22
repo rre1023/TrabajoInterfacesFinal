@@ -65,6 +65,38 @@
                 <Button Content="ENTRAR" Click="BtnLogin_Click" Height="45" Style="{StaticResource BotonVerde}"/>
 
                 <TextBlock x:Name="lblErrorLogin" Foreground="#c44343" Margin="0,15,0,0" HorizontalAlignment="Center"/>
+                
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,20,0,0">
+                    <TextBlock Text="¿No tienes cuenta?" Foreground="#b8b6b4" VerticalAlignment="Center"/>
+                    <Button Content="Registrarse" Click="BtnMostrarRegistro_Click" Background="Transparent" Foreground="#66c0f4" BorderThickness="0" FontWeight="Bold" Margin="5,0,0,0" Cursor="Hand"/>
+                </StackPanel>
+            </StackPanel>
+        </Grid>
+
+        <Grid x:Name="Grid_Registro" Visibility="Collapsed" Panel.ZIndex="10" Background="#1b2838">
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Width="360">
+                <TextBlock Text="CREAR CUENTA" Foreground="White" FontSize="28" FontWeight="Bold" Margin="0,0,0,30"/>
+
+                <TextBlock Text="NOMBRE DE USUARIO" Foreground="#1999ff" FontWeight="Bold" FontSize="12"/>
+                <TextBox x:Name="txtNombreRegistro" Height="35" Margin="0,5,0,15" Background="#323f53" Foreground="White" BorderThickness="0" Padding="5"/>
+
+                <TextBlock Text="CORREO ELECTRÓNICO" Foreground="#1999ff" FontWeight="Bold" FontSize="12"/>
+                <TextBox x:Name="txtEmailRegistro" Height="35" Margin="0,5,0,15" Background="#323f53" Foreground="White" BorderThickness="0" Padding="5"/>
+
+                <TextBlock Text="CONTRASEÑA" Foreground="#1999ff" FontWeight="Bold" FontSize="12"/>
+                <PasswordBox x:Name="txtPassRegistro" Height="35" Margin="0,5,0,15" Background="#323f53" Foreground="White" BorderThickness="0" Padding="5"/>
+
+                <TextBlock Text="CONFIRMAR CONTRASEÑA" Foreground="#1999ff" FontWeight="Bold" FontSize="12"/>
+                <PasswordBox x:Name="txtPassConfirmarRegistro" Height="35" Margin="0,5,0,25" Background="#323f53" Foreground="White" BorderThickness="0" Padding="5"/>
+
+                <Button Content="CREAR CUENTA" Click="BtnRegistrar_Click" Height="45" Style="{StaticResource BotonVerde}"/>
+
+                <TextBlock x:Name="lblErrorRegistro" Foreground="#c44343" Margin="0,15,0,0" HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center"/>
+                
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,20,0,0">
+                    <TextBlock Text="¿Ya tienes cuenta?" Foreground="#b8b6b4" VerticalAlignment="Center"/>
+                    <Button Content="Iniciar Sesión" Click="BtnMostrarLogin_Click" Background="Transparent" Foreground="#66c0f4" BorderThickness="0" FontWeight="Bold" Margin="5,0,0,0" Cursor="Hand"/>
+                </StackPanel>
             </StackPanel>
         </Grid>
 
