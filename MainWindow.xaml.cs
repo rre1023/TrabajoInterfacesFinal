@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -17,7 +19,6 @@ namespace TrabajoInterfacesFinal
         decimal saldo = 100.00m;
 
         // Listas de datos
-        List<DatosJuego> biblioteca = new List<DatosJuego>();
         List<DatosJuego> carrito = new List<DatosJuego>();
         List<MetodoPago> misMetodosPago = new List<MetodoPago>();
 
@@ -26,6 +27,9 @@ namespace TrabajoInterfacesFinal
 
         // Variable temporal para detalle
         DatosJuego juegoActualEnDetalle = new DatosJuego();
+
+        // Cambiado a ObservableCollection<DatosJuego>
+        private ObservableCollection<DatosJuego> bibliotecaJuegos = new ObservableCollection<DatosJuego>();
 
         #endregion
 
@@ -37,6 +41,7 @@ namespace TrabajoInterfacesFinal
             InitializeComponent();
             CargarJuegosEnTienda();
             ActualizarSaldoVisual();
+            listaBiblioteca.ItemsSource = bibliotecaJuegos;
         }
 
         // =========================================================
@@ -64,13 +69,7 @@ namespace TrabajoInterfacesFinal
         {
             OcultarTodas();
             Grid_Biblioteca.Visibility = Visibility.Visible;
-
-            // Refrescar lista visual
-            listaBiblioteca.Items.Clear();
-            foreach (DatosJuego juego in biblioteca)
-            {
-                listaBiblioteca.Items.Add($"{juego.Titulo} - (Comprado)");
-            }
+            // El binding se encarga de refrescar la vista automáticamente
         }
 
         private void Nav_Perfil_Click(object sender, RoutedEventArgs e)
@@ -247,17 +246,31 @@ namespace TrabajoInterfacesFinal
         private void BtnComprar_Click(object sender, RoutedEventArgs e)
         {
             // Validar Biblioteca
-            foreach (var j in biblioteca)
+            foreach (var j in bibliotecaJuegos)
             {
-                if (j.Titulo == juegoActualEnDetalle.Titulo) { MessageBox.Show("¡Ya tienes este juego!"); return; }
+                if (j.Titulo == juegoActualEnDetalle.Titulo)
+                {
+                    MessageBox.Show("¡Ya tienes este juego!");
+                    return;
+                }
             }
             // Validar Carrito
             foreach (var j in carrito)
             {
-                if (j.Titulo == juegoActualEnDetalle.Titulo) { MessageBox.Show("Ya está en el carrito."); Nav_Carrito_Click(null, null); return; }
+                if (j.Titulo == juegoActualEnDetalle.Titulo)
+                {
+                    MessageBox.Show("Ya está en el carrito.");
+                    Nav_Carrito_Click(null, null);
+                    return;
+                }
             }
 
-            carrito.Add(new DatosJuego { Titulo = juegoActualEnDetalle.Titulo, Precio = juegoActualEnDetalle.Precio, Genero = juegoActualEnDetalle.Genero });
+            carrito.Add(new DatosJuego
+            {
+                Titulo = juegoActualEnDetalle.Titulo,
+                Precio = juegoActualEnDetalle.Precio,
+                Genero = juegoActualEnDetalle.Genero
+            });
             MessageBox.Show("Añadido al carrito");
             ActualizarVistaCarrito();
         }
@@ -271,9 +284,6 @@ namespace TrabajoInterfacesFinal
             foreach (var item in carrito) total += item.Precio;
 
             txtTotalCarrito.Text = total + "€";
-
-            // ESTA LÍNEA LA BORRAMOS PORQUE YA NO HAY TEXTO EN EL BOTÓN:
-            // txtContadorCarrito.Text = $"CARRITO ({carrito.Count})"; 
         }
 
         private void BtnEliminarCarrito_Click(object sender, RoutedEventArgs e)
@@ -298,7 +308,19 @@ namespace TrabajoInterfacesFinal
                 saldo -= total;
                 ActualizarSaldoVisual();
 
-                foreach (var item in carrito) biblioteca.Add(item);
+                // Añadir a la biblioteca solo si no existe ya
+                foreach (var item in carrito)
+                {
+                    if (!bibliotecaJuegos.Any(j => j.Titulo == item.Titulo))
+                    {
+                        bibliotecaJuegos.Add(new DatosJuego
+                        {
+                            Titulo = item.Titulo,
+                            Genero = item.Genero,
+                            Precio = item.Precio
+                        });
+                    }
+                }
 
                 // Generar Factura
                 GenerarFacturaTXT(new List<DatosJuego>(carrito), total);
@@ -420,6 +442,43 @@ namespace TrabajoInterfacesFinal
         }
 
         #endregion
+
+        // Método para añadir un juego a la biblioteca
+        public void AgregarJuegoABiblioteca(DatosJuego juego)
+        {
+            if (!bibliotecaJuegos.Any(j => j.Titulo == juego.Titulo))
+            {
+                bibliotecaJuegos.Add(new DatosJuego
+                {
+                    Titulo = juego.Titulo,
+                    Genero = juego.Genero,
+                    Precio = juego.Precio
+                });
+            }
+        }
+
+        // Ejemplo: Llama a este método después de una compra exitosa
+        private void SimularCompra()
+        {
+            var juego = new DatosJuego { Titulo = "Elden Ring", Genero = "RPG", Precio = 59.99m };
+            AgregarJuegoABiblioteca(juego);
+        }
+
+        private void BtnEliminarBiblioteca_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button btn && btn.DataContext is DatosJuego juego)
+            {
+                bibliotecaJuegos.Remove(juego);
+            }
+        }
+
+        private void BtnJugarBiblioteca_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button btn && btn.DataContext is DatosJuego juego)
+            {
+                MessageBox.Show($"¡Lanzando {juego.Titulo}!\n(Implementa aquí la lógica para abrir el juego)", "JUGAR", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+        }
     }
 
     // =========================================================
@@ -436,7 +495,6 @@ namespace TrabajoInterfacesFinal
     {
         public string Nombre { get; set; }
         public string Tipo { get; set; }
-        // Esto hace que el ComboBox muestre el texto bonito automáticamente
         public override string ToString() { return $"{Tipo}: {Nombre}"; }
     }
 }
