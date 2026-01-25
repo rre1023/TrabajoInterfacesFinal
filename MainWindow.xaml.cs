@@ -1,16 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel; // Para ObservableCollection
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-using System.Diagnostics; // Para abrir el PDF
+using System.Diagnostics;
+using System.ComponentModel;
 
 using Microsoft.EntityFrameworkCore;
-
-
 
 // LIBRERÍAS PARA ITEXT 9 (La versión que tienes instalada)
 using iText.Kernel.Pdf;
@@ -50,7 +49,6 @@ namespace TrabajoInterfacesFinal
             
             using (var db = new AppDbContext())
             {
-                db.Database.EnsureDeleted();
                 db.Database.EnsureCreated();
                 
                 if (!db.Usuarios.Any())
@@ -106,7 +104,7 @@ namespace TrabajoInterfacesFinal
                             Precio = 59.99m,
                             Genero = "Aventura",
                             Imagen = "Fotos/Zelda.webp",
-                            Descripcion = "Género: Aventura La joya de Nintendo. Es la secuela de Breath of the Wild. Controlas a Link en el reino de Hyrule, pero esta vez puedes explorar islas flotantes en el cielo y profundidades subterráneas. Su gran novedad es la capacidad de construir vehículos y armas fusionando objetos del entorno con magia, fomentando la creatividad total del jugador."
+                            Descripcion = "Género: Aventura La joya de Nintendo. Es la secuela de Breath of the Wild. Controlas a Link in el reino de Hyrule, pero esta vez puedes explorar islas flotantes en el cielo y profundidades subterráneas. Su gran novedad es la capacidad de construir vehículos y armas fusionando objetos del entorno con magia, fomentando la creatividad total del jugador."
                         },
                         new Juego
                         {
@@ -162,6 +160,23 @@ namespace TrabajoInterfacesFinal
         {
             OcultarTodas();
             Grid_Biblioteca.Visibility = Visibility.Visible;
+            
+            if (usuarioActual != null)
+            {
+                using (var db = new AppDbContext())
+                {
+                    foreach (var juego in bibliotecaJuegos)
+                    {
+                        var valoracionUsuario = db.Valoraciones
+                            .FirstOrDefault(v => v.JuegoId == juego.JuegoId && v.UsuarioId == usuarioActual.Id);
+                        
+                        if (valoracionUsuario != null)
+                        {
+                            juego.Valoracion = valoracionUsuario.Puntuacion;
+                        }
+                    }
+                }
+            }
         }
 
         private void Nav_Perfil_Click(object sender, RoutedEventArgs e)
@@ -206,6 +221,9 @@ namespace TrabajoInterfacesFinal
                 {
                     var usuario = db.Usuarios
                         .Include(u => u.MetodosPago)
+                        .Include(u => u.BibliotecaJuegos)
+                            .ThenInclude(b => b.Juego)
+                                .ThenInclude(j => j.Valoraciones)
                         .FirstOrDefault(u => 
                             u.Nombre == txtUserLogin.Text && 
                             u.Contraseña == txtPassLogin.Password);
@@ -214,6 +232,24 @@ namespace TrabajoInterfacesFinal
                     {
                         usuarioActual = usuario;
                         misMetodosPago = usuario.MetodosPago.ToList();
+                        
+                        bibliotecaJuegos.Clear();
+                        foreach (var bibItem in usuario.BibliotecaJuegos)
+                        {
+                            var valoracionUsuario = bibItem.Juego.Valoraciones.FirstOrDefault(v => v.UsuarioId == usuario.Id);
+                            
+                            bibliotecaJuegos.Add(new DatosJuego
+                            {
+                                Titulo = bibItem.Juego.Titulo,
+                                Genero = bibItem.Juego.Genero,
+                                Precio = bibItem.Juego.Precio,
+                                JuegoId = bibItem.Juego.Id,
+                                ValoracionPromedio = bibItem.Juego.ValoracionPromedio,
+                                TotalValoraciones = bibItem.Juego.TotalValoraciones,
+                                Valoracion = valoracionUsuario?.Puntuacion ?? 0
+                            });
+                        }
+                        
                         txtUsuarioMenu.Text = usuario.Nombre;
                         txtEditUser.Text = usuario.Nombre;
                         ActualizarSaldoVisual();
@@ -338,6 +374,8 @@ namespace TrabajoInterfacesFinal
             txtUserLogin.Text = "";
             usuarioActual = null;
             misMetodosPago.Clear();
+            bibliotecaJuegos.Clear();
+            carrito.Clear();
         }
 
         #endregion
@@ -353,14 +391,15 @@ namespace TrabajoInterfacesFinal
             
             using (var db = new AppDbContext())
             {
-                var juegos = db.Juegos.ToList();
+                var juegos = db.Juegos.Include(j => j.Valoraciones).ToList();
                 foreach (var juego in juegos)
                 {
                     catalogoCompleto.Add(new DatosJuego 
                     { 
                         Titulo = juego.Titulo, 
                         Precio = juego.Precio, 
-                        Genero = juego.Genero 
+                        Genero = juego.Genero,
+                        ValoracionPromedio = juego.ValoracionPromedio
                     });
                 }
             }
@@ -379,7 +418,7 @@ namespace TrabajoInterfacesFinal
             {
                 foreach (var juego in listaParaMostrar)
                 {
-                    var juegoCompleto = db.Juegos.FirstOrDefault(j => j.Titulo == juego.Titulo);
+                    var juegoCompleto = db.Juegos.Include(j => j.Valoraciones).FirstOrDefault(j => j.Titulo == juego.Titulo);
                     if (juegoCompleto == null) continue;
 
                     Border carta = new Border
@@ -492,10 +531,30 @@ namespace TrabajoInterfacesFinal
 
             using (var db = new AppDbContext())
             {
-                var juegoCompleto = db.Juegos.FirstOrDefault(j => j.Titulo == datos.Titulo);
+                var juegoCompleto = db.Juegos.Include(j => j.Valoraciones).FirstOrDefault(j => j.Titulo == datos.Titulo);
                 if (juegoCompleto != null)
                 {
-                    juegoActualEnDetalle = datos;
+                    juegoActualEnDetalle = new DatosJuego 
+                    { 
+                        Titulo = datos.Titulo,
+                        Precio = datos.Precio,
+                        Genero = datos.Genero,
+                        JuegoId = juegoCompleto.Id,
+                        ValoracionPromedio = juegoCompleto.ValoracionPromedio,
+                        TotalValoraciones = juegoCompleto.TotalValoraciones
+                    };
+                    
+                    if (usuarioActual != null)
+                    {
+                        var valoracionUsuario = juegoCompleto.Valoraciones.FirstOrDefault(v => v.UsuarioId == usuarioActual.Id);
+                        if (valoracionUsuario != null)
+                        {
+                            juegoActualEnDetalle.Valoracion = valoracionUsuario.Puntuacion;
+                        }
+                    }
+                    
+                    panelEstrellasDetalle.DataContext = juegoActualEnDetalle;
+                    
                     txtDetalleTitulo.Text = juegoCompleto.Titulo;
                     txtDetallePrecio.Text = juegoCompleto.Precio + "€";
                     txtDetalleDescripcion.Text = juegoCompleto.Descripcion ?? "No hay descripción disponible.";
@@ -548,10 +607,25 @@ namespace TrabajoInterfacesFinal
 
         private void BtnComprar_Click(object sender, RoutedEventArgs e)
         {
-            foreach (var j in bibliotecaJuegos)
+            if (usuarioActual == null)
             {
-                if (j.Titulo == juegoActualEnDetalle.Titulo) { MessageBox.Show("¡Ya tienes este juego!"); return; }
+                MessageBox.Show("Debes iniciar sesión para comprar juegos.", "Sesión requerida", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
             }
+
+            using (var db = new AppDbContext())
+            {
+                var tienJuego = db.BibliotecaUsuarios
+                    .Any(b => b.UsuarioId == usuarioActual.Id && 
+                         b.Juego.Titulo == juegoActualEnDetalle.Titulo);
+                
+                if (tienJuego)
+                {
+                    MessageBox.Show("¡Ya tienes este juego!");
+                    return;
+                }
+            }
+            
             foreach (var j in carrito)
             {
                 if (j.Titulo == juegoActualEnDetalle.Titulo) { MessageBox.Show("Ya está en el carrito."); Nav_Carrito_Click(null, null); return; }
@@ -597,34 +671,58 @@ namespace TrabajoInterfacesFinal
 
             if (usuarioActual.Saldo >= total)
             {
-                usuarioActual.Saldo -= total;
-                
                 using (var db = new AppDbContext())
                 {
-                    var usuario = db.Usuarios.Find(usuarioActual.Id);
+                    var usuario = db.Usuarios
+                        .Include(u => u.BibliotecaJuegos)
+                        .FirstOrDefault(u => u.Id == usuarioActual.Id);
+                    
                     if (usuario != null)
                     {
-                        usuario.Saldo = usuarioActual.Saldo;
+                        usuario.Saldo -= total;
+                        usuarioActual.Saldo = usuario.Saldo;
+                        
+                        foreach (var item in carrito)
+                        {
+                            var juegoCompleto = db.Juegos
+                                .Include(j => j.Valoraciones)
+                                .FirstOrDefault(j => j.Titulo == item.Titulo);
+                            
+                            if (juegoCompleto != null)
+                            {
+                                if (!usuario.BibliotecaJuegos.Any(b => b.JuegoId == juegoCompleto.Id))
+                                {
+                                    var nuevaBiblioteca = new BibliotecaUsuario
+                                    {
+                                        UsuarioId = usuario.Id,
+                                        JuegoId = juegoCompleto.Id,
+                                        FechaAdquisicion = DateTime.Now
+                                    };
+                                    
+                                    db.BibliotecaUsuarios.Add(nuevaBiblioteca);
+                                    
+                                    if (!bibliotecaJuegos.Any(j => j.Titulo == item.Titulo))
+                                    {
+                                        bibliotecaJuegos.Add(new DatosJuego
+                                        {
+                                            Titulo = item.Titulo,
+                                            Genero = item.Genero,
+                                            Precio = item.Precio,
+                                            JuegoId = juegoCompleto.Id,
+                                            ValoracionPromedio = juegoCompleto.ValoracionPromedio,
+                                            TotalValoraciones = juegoCompleto.TotalValoraciones
+                                        });
+                                    }
+                                }
+                            }
+                        }
+                        
                         db.SaveChanges();
                     }
                 }
                 
                 ActualizarSaldoVisual();
 
-                foreach (var item in carrito)
-                {
-                    if (!bibliotecaJuegos.Any(j => j.Titulo == item.Titulo))
-                    {
-                        bibliotecaJuegos.Add(new DatosJuego
-                        {
-                            Titulo = item.Titulo,
-                            Genero = item.Genero,
-                            Precio = item.Precio
-                        });
-                    }
-                }
-
-                // Generamos la factura PDF usando iText 9
                 GenerarFacturaPDF(new List<DatosJuego>(carrito), total);
 
                 carrito.Clear();
@@ -827,7 +925,7 @@ namespace TrabajoInterfacesFinal
         #endregion
 
         // =========================================================
-        // 10. EVENTO JUGAR
+        // 10. EVENTO JUGAR Y VALORACIONES
         // =========================================================
         private void BtnJugarBiblioteca_Click(object sender, RoutedEventArgs e)
         {
@@ -842,21 +940,204 @@ namespace TrabajoInterfacesFinal
 
         }
 
+        private void BtnValorarBiblioteca_Click(object sender, RoutedEventArgs e)
+        {
+            if (usuarioActual == null)
+            {
+                MessageBox.Show("Debes iniciar sesión para valorar juegos.", "Sesión requerida", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            if (sender is Button btn && btn.DataContext is DatosJuego juego)
+            {
+                var dialog = new Window
+                {
+                    Title = $"Valorar {juego.Titulo}",
+                    Width = 400,
+                    Height = 280,
+                    WindowStartupLocation = WindowStartupLocation.CenterScreen,
+                    Background = new SolidColorBrush(Color.FromRgb(27, 40, 56)),
+                    ResizeMode = ResizeMode.NoResize
+                };
+
+                var stackPanel = new StackPanel { Margin = new Thickness(30) };
+
+                var txtTitulo = new TextBlock
+                {
+                    Text = "Selecciona tu valoración:",
+                    Foreground = Brushes.White,
+                    FontSize = 18,
+                    FontWeight = System.Windows.FontWeights.Bold,
+                    Margin = new Thickness(0, 0, 0, 20),
+                    HorizontalAlignment = System.Windows.HorizontalAlignment.Center
+                };
+
+                var estrellas = new StackPanel { Orientation = Orientation.Horizontal };
+                estrellas.HorizontalAlignment = System.Windows.HorizontalAlignment.Center;
+                int valoracionSeleccionada = juego.Valoracion;
+
+                for (int i = 1; i <= 5; i++)
+                {
+                    var btnEstrella = new Button
+                    {
+                        Content = "★",
+                        FontSize = 36,
+                        Background = Brushes.Transparent,
+                        Foreground = i <= valoracionSeleccionada ? Brushes.Gold : Brushes.Gray,
+                        BorderThickness = new Thickness(0),
+                        Cursor = System.Windows.Input.Cursors.Hand,
+                        Tag = i,
+                        Margin = new Thickness(5)
+                    };
+
+                    btnEstrella.Click += (s, ev) =>
+                    {
+                        int valor = (int)((Button)s).Tag;
+                        valoracionSeleccionada = valor;
+
+                        foreach (Button b in estrellas.Children)
+                        {
+                            int estrella = (int)b.Tag;
+                            b.Foreground = estrella <= valor ? Brushes.Gold : Brushes.Gray;
+                        }
+                    };
+
+                    estrellas.Children.Add(btnEstrella);
+                }
+
+                var btnGuardar = new Button
+                {
+                    Content = "GUARDAR VALORACIÓN",
+                    Height = 50,
+                    Margin = new Thickness(0, 30, 0, 0),
+                    Background = new SolidColorBrush(Color.FromRgb(92, 126, 16)),
+                    Foreground = Brushes.White,
+                    FontSize = 16,
+                    BorderThickness = new Thickness(0),
+                    Cursor = System.Windows.Input.Cursors.Hand
+                };
+                btnGuardar.FontWeight = System.Windows.FontWeights.Bold;
+
+                btnGuardar.Click += (s, ev) =>
+                {
+                    using (var db = new AppDbContext())
+                    {
+                        var juegoDb = db.Juegos.Include(j => j.Valoraciones).FirstOrDefault(j => j.Id == juego.JuegoId);
+                        if (juegoDb == null) return;
+
+                        var valoracionExistente = juegoDb.Valoraciones.FirstOrDefault(v => v.UsuarioId == usuarioActual.Id);
+
+                        if (valoracionExistente != null)
+                        {
+                            valoracionExistente.Puntuacion = valoracionSeleccionada;
+                            valoracionExistente.FechaValoracion = DateTime.Now;
+                        }
+                        else
+                        {
+                            var nuevaValoracion = new Valoracion
+                            {
+                                JuegoId = juegoDb.Id,
+                                UsuarioId = usuarioActual.Id,
+                                Puntuacion = valoracionSeleccionada,
+                                FechaValoracion = DateTime.Now
+                            };
+                            db.Valoraciones.Add(nuevaValoracion);
+                        }
+
+                        db.SaveChanges();
+
+                        juego.Valoracion = valoracionSeleccionada;
+                        juego.ValoracionPromedio = juegoDb.ValoracionPromedio;
+                        juego.TotalValoraciones = juegoDb.TotalValoraciones;
+
+                        var juegoEnCatalogo = catalogoCompleto.FirstOrDefault(j => j.Titulo == juego.Titulo);
+                        if (juegoEnCatalogo != null)
+                        {
+                            juegoEnCatalogo.ValoracionPromedio = juego.ValoracionPromedio;
+                            juegoEnCatalogo.TotalValoraciones = juego.TotalValoraciones;
+                        }
+
+                        MessageBox.Show($"¡Valoración de {valoracionSeleccionada} estrellas guardada!", "Valoración Registrada", MessageBoxButton.OK, MessageBoxImage.Information);
+                        dialog.Close();
+                    }
+                };
+
+                stackPanel.Children.Add(txtTitulo);
+                stackPanel.Children.Add(estrellas);
+                stackPanel.Children.Add(btnGuardar);
+
+                dialog.Content = stackPanel;
+                dialog.ShowDialog();
+            }
+        }
+
         private void Star_Click(object sender, RoutedEventArgs e)
         {
+            if (usuarioActual == null)
+            {
+                MessageBox.Show("Debes iniciar sesión para valorar juegos.", "Sesión requerida", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
             if (sender is Button btn && btn.DataContext is DatosJuego juego && int.TryParse(btn.Tag.ToString(), out int valor))
             {
-                juego.Valoracion = valor;
+                using (var db = new AppDbContext())
+                {
+                    var juegoDb = db.Juegos.Include(j => j.Valoraciones).FirstOrDefault(j => j.Id == juego.JuegoId);
+                    if (juegoDb == null) return;
+
+                    var valoracionExistente = juegoDb.Valoraciones.FirstOrDefault(v => v.UsuarioId == usuarioActual.Id);
+
+                    if (valoracionExistente != null)
+                    {
+                        valoracionExistente.Puntuacion = valor;
+                        valoracionExistente.FechaValoracion = DateTime.Now;
+                    }
+                    else
+                    {
+                        var nuevaValoracion = new Valoracion
+                        {
+                            JuegoId = juegoDb.Id,
+                            UsuarioId = usuarioActual.Id,
+                            Puntuacion = valor,
+                            FechaValoracion = DateTime.Now
+                        };
+                        db.Valoraciones.Add(nuevaValoracion);
+                    }
+
+                    db.SaveChanges();
+
+                    juego.Valoracion = valor;
+                    juego.ValoracionPromedio = juegoDb.ValoracionPromedio;
+                    juego.TotalValoraciones = juegoDb.TotalValoraciones;
+
+                    var juegoEnBiblioteca = bibliotecaJuegos.FirstOrDefault(j => j.JuegoId == juego.JuegoId);
+                    if (juegoEnBiblioteca != null)
+                    {
+                        juegoEnBiblioteca.ValoracionPromedio = juego.ValoracionPromedio;
+                        juegoEnBiblioteca.TotalValoraciones = juego.TotalValoraciones;
+                    }
+
+                    var juegoEnCatalogo = catalogoCompleto.FirstOrDefault(j => j.Titulo == juego.Titulo);
+                    if (juegoEnCatalogo != null)
+                    {
+                        juegoEnCatalogo.ValoracionPromedio = juego.ValoracionPromedio;
+                        juegoEnCatalogo.TotalValoraciones = juego.TotalValoraciones;
+                    }
+
+                    MessageBox.Show($"¡Valoración de {valor} estrellas guardada!", "Valoración Registrada", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
             }
         }
     }
 
     // CLASES AUXILIARES
-    public class DatosJuego
+    public class DatosJuego : INotifyPropertyChanged
     {
         public string Titulo { get; set; }
         public decimal Precio { get; set; }
         public string Genero { get; set; }
+        public int JuegoId { get; set; }
 
         private int valoracion = 0;
         public int Valoracion
@@ -867,12 +1148,54 @@ namespace TrabajoInterfacesFinal
                 if (valoracion != value)
                 {
                     valoracion = value;
-                    PropertyChanged?.Invoke(this, new System.ComponentModel.PropertyChangedEventArgs(nameof(Valoracion)));
+                    OnPropertyChanged(nameof(Valoracion));
                 }
             }
         }
 
-        public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
+        private double valoracionPromedio = 0;
+        public double ValoracionPromedio
+        {
+            get => valoracionPromedio;
+            set
+            {
+                if (Math.Abs(valoracionPromedio - value) > 0.01)
+                {
+                    valoracionPromedio = value;
+                    OnPropertyChanged(nameof(ValoracionPromedio));
+                    OnPropertyChanged(nameof(ValoracionPromedioTexto));
+                    OnPropertyChanged(nameof(ValoracionPromedioRedondeada));
+                }
+            }
+        }
+
+        private int totalValoraciones = 0;
+        public int TotalValoraciones
+        {
+            get => totalValoraciones;
+            set
+            {
+                if (totalValoraciones != value)
+                {
+                    totalValoraciones = value;
+                    OnPropertyChanged(nameof(TotalValoraciones));
+                    OnPropertyChanged(nameof(ValoracionPromedioTexto));
+                }
+            }
+        }
+
+        public int ValoracionPromedioRedondeada => (int)Math.Round(valoracionPromedio);
+
+        public string ValoracionPromedioTexto => TotalValoraciones > 0 
+            ? $"⭐ {ValoracionPromedio:F1} ({TotalValoraciones} {(TotalValoraciones == 1 ? "valoración" : "valoraciones")})"
+            : "Sin valoraciones";
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        protected void OnPropertyChanged(string propertyName)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
     }
 
     public class Juego
@@ -883,6 +1206,50 @@ namespace TrabajoInterfacesFinal
         public string Genero { get; set; }
         public string Descripcion { get; set; }
         public string Imagen { get; set; }
+        
+        public List<Valoracion> Valoraciones { get; set; } = new List<Valoracion>();
+
+        public double ValoracionPromedio
+        {
+            get
+            {
+                if (Valoraciones == null || !Valoraciones.Any())
+                    return 0;
+                
+                return Math.Round(Valoraciones.Average(v => v.Puntuacion), 1);
+            }
+        }
+
+        public int TotalValoraciones
+        {
+            get
+            {
+                return Valoraciones?.Count ?? 0;
+            }
+        }
+    }
+
+    public class Valoracion
+    {
+        public int Id { get; set; }
+        public int JuegoId { get; set; }
+        public int UsuarioId { get; set; }
+        public int Puntuacion { get; set; }
+        public DateTime FechaValoracion { get; set; }
+        
+        public Juego Juego { get; set; }
+        public Usuario Usuario { get; set; }
+    }
+
+    public class BibliotecaUsuario
+    {
+        public int Id { get; set; }
+        public int UsuarioId { get; set; }
+        public int JuegoId { get; set; }
+        public DateTime FechaAdquisicion { get; set; }
+        
+        public Usuario Usuario { get; set; }
+        public Juego Juego { get; set; }
     }
 
     public class MetodoPago
@@ -902,6 +1269,7 @@ namespace TrabajoInterfacesFinal
         public string Contraseña { get; set; }
         public decimal Saldo { get; set; } = 0m;
         public List<MetodoPago> MetodosPago { get; set; } = new List<MetodoPago>();
+        public List<BibliotecaUsuario> BibliotecaJuegos { get; set; } = new List<BibliotecaUsuario>();
     }
 
     public class AppDbContext : DbContext
@@ -909,6 +1277,8 @@ namespace TrabajoInterfacesFinal
         public DbSet<Usuario> Usuarios { get; set; }
         public DbSet<MetodoPago> MetodosPago { get; set; }
         public DbSet<Juego> Juegos { get; set; }
+        public DbSet<Valoracion> Valoraciones { get; set; }
+        public DbSet<BibliotecaUsuario> BibliotecaUsuarios { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder options)
         {
@@ -930,6 +1300,38 @@ namespace TrabajoInterfacesFinal
                 .WithMany(u => u.MetodosPago)
                 .HasForeignKey(m => m.UsuarioId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Valoracion>()
+                .HasOne(v => v.Juego)
+                .WithMany(j => j.Valoraciones)
+                .HasForeignKey(v => v.JuegoId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Valoracion>()
+                .HasOne(v => v.Usuario)
+                .WithMany()
+                .HasForeignKey(v => v.UsuarioId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Valoracion>()
+                .HasIndex(v => new { v.JuegoId, v.UsuarioId })
+                .IsUnique();
+
+            modelBuilder.Entity<BibliotecaUsuario>()
+                .HasOne(b => b.Usuario)
+                .WithMany(u => u.BibliotecaJuegos)
+                .HasForeignKey(b => b.UsuarioId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<BibliotecaUsuario>()
+                .HasOne(b => b.Juego)
+                .WithMany()
+                .HasForeignKey(b => b.JuegoId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<BibliotecaUsuario>()
+                .HasIndex(b => new { b.UsuarioId, b.JuegoId })
+                .IsUnique();
         }
     }
 }
