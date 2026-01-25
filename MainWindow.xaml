@@ -260,7 +260,7 @@
                                                     BorderThickness="0"
                                                     Cursor="Hand"
                                                     VerticalAlignment="Center"
-                                                    Click="BtnJugarBiblioteca_Click"/>
+                                                    Click="Button_Click"/>
                                         </Grid>
                                     </Border>
                                 </DataTemplate>
