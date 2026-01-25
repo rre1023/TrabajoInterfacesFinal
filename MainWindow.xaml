@@ -49,6 +49,7 @@
                 </Trigger>
             </Style.Triggers>
         </Style>
+
     </Window.Resources>
 
     <Grid>
@@ -136,6 +137,109 @@
                             <TextBlock Text="IMAGEN DEL JUEGO" Foreground="Gray" VerticalAlignment="Center" HorizontalAlignment="Center"/>
                         </Border>
                         <TextBlock Text="Descripción detallada del juego..." Foreground="#acb2b8" TextWrapping="Wrap"/>
+
+                        <StackPanel x:Name="panelEstrellasDetalle" Orientation="Horizontal" Margin="0,6,0,0">
+                            <Button Content="★" FontSize="18" Padding="0" Margin="0,0,2,0"
+                                    Background="Transparent" BorderThickness="0"
+                                    Click="Star_Click" Tag="1">
+                                <Button.Style>
+                                    <Style TargetType="Button">
+                                        <Setter Property="Foreground" Value="Gray"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Valoracion}" Value="1">
+                                                <Setter Property="Foreground" Value="Gold"/>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding Valoracion}" Value="2">
+                                                <Setter Property="Foreground" Value="Gold"/>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding Valoracion}" Value="3">
+                                                <Setter Property="Foreground" Value="Gold"/>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding Valoracion}" Value="4">
+                                                <Setter Property="Foreground" Value="Gold"/>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding Valoracion}" Value="5">
+                                                <Setter Property="Foreground" Value="Gold"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
+                            <Button Content="★" FontSize="18" Padding="0" Margin="0,0,2,0"
+                                    Background="Transparent" BorderThickness="0"
+                                    Click="Star_Click" Tag="2">
+                                <Button.Style>
+                                    <Style TargetType="Button">
+                                        <Setter Property="Foreground" Value="Gray"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Valoracion}" Value="2">
+                                                <Setter Property="Foreground" Value="Gold"/>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding Valoracion}" Value="3">
+                                                <Setter Property="Foreground" Value="Gold"/>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding Valoracion}" Value="4">
+                                                <Setter Property="Foreground" Value="Gold"/>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding Valoracion}" Value="5">
+                                                <Setter Property="Foreground" Value="Gold"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
+                            <Button Content="★" FontSize="18" Padding="0" Margin="0,0,2,0"
+                                    Background="Transparent" BorderThickness="0"
+                                    Click="Star_Click" Tag="3">
+                                <Button.Style>
+                                    <Style TargetType="Button">
+                                        <Setter Property="Foreground" Value="Gray"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Valoracion}" Value="3">
+                                                <Setter Property="Foreground" Value="Gold"/>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding Valoracion}" Value="4">
+                                                <Setter Property="Foreground" Value="Gold"/>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding Valoracion}" Value="5">
+                                                <Setter Property="Foreground" Value="Gold"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
+                            <Button Content="★" FontSize="18" Padding="0" Margin="0,0,2,0"
+                                    Background="Transparent" BorderThickness="0"
+                                    Click="Star_Click" Tag="4">
+                                <Button.Style>
+                                    <Style TargetType="Button">
+                                        <Setter Property="Foreground" Value="Gray"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Valoracion}" Value="4">
+                                                <Setter Property="Foreground" Value="Gold"/>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding Valoracion}" Value="5">
+                                                <Setter Property="Foreground" Value="Gold"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
+                            <Button Content="★" FontSize="18" Padding="0"
+                                    Background="Transparent" BorderThickness="0"
+                                    Click="Star_Click" Tag="5">
+                                <Button.Style>
+                                    <Style TargetType="Button">
+                                        <Setter Property="Foreground" Value="Gray"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Valoracion}" Value="5">
+                                                <Setter Property="Foreground" Value="Gold"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
+                        </StackPanel>
                     </StackPanel>
                     <Border Grid.Column="1" Background="#14171e" Padding="20" Height="200" VerticalAlignment="Top">
                         <StackPanel>
@@ -182,53 +286,75 @@
                     <StackPanel>
                         <TextBlock Text="MIS JUEGOS" FontSize="28" Foreground="White" Margin="0,0,0,20"/>
                         <ListView x:Name="listaBiblioteca"
-                                  Background="#16202D"
-                                  BorderThickness="0"
-                                  HorizontalAlignment="Stretch"
-                                  VerticalAlignment="Stretch"
-                                  ItemsSource="{Binding}">
+          Background="#16202D"
+          BorderThickness="0"
+          HorizontalAlignment="Stretch"
+          VerticalAlignment="Stretch"
+          ItemsSource="{Binding}">
                             <ListView.ItemTemplate>
                                 <DataTemplate>
                                     <Border Background="#232F3E" 
-                                            CornerRadius="8" 
-                                            Margin="0,0,0,15" 
-                                            Padding="10"
-                                            BorderBrush="#3A4A5A"
-                                            BorderThickness="1">
+                    CornerRadius="8" 
+                    Margin="0,0,0,15" 
+                    Padding="10"
+                    BorderBrush="#3A4A5A"
+                    BorderThickness="1">
                                         <Grid>
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="*"/>
                                                 <ColumnDefinition Width="Auto"/>
                                             </Grid.ColumnDefinitions>
                                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Grid.Column="0">
-                                                <!-- Imagen de ejemplo, puedes personalizarlo -->
                                                 <Border Width="60" Height="60" Background="Black" CornerRadius="5" Margin="0,0,15,0"/>
                                                 <StackPanel>
                                                     <TextBlock Text="{Binding Titulo}" 
-                                                               Foreground="White" 
-                                                               FontWeight="Bold" 
-                                                               FontSize="16"/>
+                                       Foreground="White" 
+                                       FontWeight="Bold" 
+                                       FontSize="16"/>
                                                     <TextBlock Text="{Binding Genero}" 
-                                                               Foreground="#7FC7A3" 
-                                                               FontSize="12" 
-                                                               Margin="0,2,0,0"/>
+                                       Foreground="#7FC7A3" 
+                                       FontSize="12" 
+                                       Margin="0,2,0,0"/>
                                                     <TextBlock Text="{Binding Precio, StringFormat={}{0}€}" 
-                                                               Foreground="#FFD700" 
-                                                               FontSize="14" 
-                                                               Margin="0,2,0,0"/>
+                                       Foreground="#FFD700" 
+                                       FontSize="14" 
+                                       Margin="0,2,0,0"/>
+                                                    <!-- Estrellas de valoración SIN CONVERSOR -->
+                                                    <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
+                                                        <Button Content="★" FontSize="18" Padding="0" Margin="0,0,2,0"
+                                        Background="Transparent" BorderThickness="0"
+                                        Click="Star_Click" Tag="1">
+                                                        </Button>
+                                                        <Button Content="★" FontSize="18" Padding="0" Margin="0,0,2,0"
+                                        Background="Transparent" BorderThickness="0"
+                                        Click="Star_Click" Tag="2">
+                                                        </Button>
+                                                        <Button Content="★" FontSize="18" Padding="0" Margin="0,0,2,0"
+                                        Background="Transparent" BorderThickness="0"
+                                        Click="Star_Click" Tag="3">
+                                                        </Button>
+                                                        <Button Content="★" FontSize="18" Padding="0" Margin="0,0,2,0"
+                                        Background="Transparent" BorderThickness="0"
+                                        Click="Star_Click" Tag="4">
+                                                        </Button>
+                                                        <Button Content="★" FontSize="18" Padding="0"
+                                        Background="Transparent" BorderThickness="0"
+                                        Click="Star_Click" Tag="5">
+                                                        </Button>
+                                                    </StackPanel>
                                                 </StackPanel>
                                             </StackPanel>
                                             <Button Content="JUGAR"
-                                                    Grid.Column="1"
-                                                    Padding="18,6"
-                                                    Margin="20,0,0,0"
-                                                    Background="#5c7e10"
-                                                    Foreground="#d2efa9"
-                                                    FontWeight="Bold"
-                                                    BorderThickness="0"
-                                                    Cursor="Hand"
-                                                    VerticalAlignment="Center"
-                                                    Click="BtnJugarBiblioteca_Click"/>
+                            Grid.Column="1"
+                            Padding="18,6"
+                            Margin="20,0,0,0"
+                            Background="#5c7e10"
+                            Foreground="#d2efa9"
+                            FontWeight="Bold"
+                            BorderThickness="0"
+                            Cursor="Hand"
+                            VerticalAlignment="Center"
+                            Click="BtnJugarBiblioteca_Click"/>
                                         </Grid>
                                     </Border>
                                 </DataTemplate>

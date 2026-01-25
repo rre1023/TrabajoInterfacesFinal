@@ -232,6 +232,9 @@ namespace TrabajoInterfacesFinal
             txtDetalleTitulo.Text = juegoActualEnDetalle.Titulo;
             txtDetallePrecio.Text = juegoActualEnDetalle.Precio + "€";
 
+            // Añade esta línea para que el binding de las estrellas funcione
+            panelEstrellasDetalle.DataContext = juegoActualEnDetalle;
+
             OcultarTodas();
             Grid_Detalle.Visibility = Visibility.Visible;
         }
@@ -479,16 +482,40 @@ namespace TrabajoInterfacesFinal
                 MessageBox.Show($"¡Lanzando {juego.Titulo}!\n(Implementa aquí la lógica para abrir el juego)", "JUGAR", MessageBoxButton.OK, MessageBoxImage.Information);
             }
         }
+
+        private void Star_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button btn && btn.DataContext is DatosJuego juego && int.TryParse(btn.Tag.ToString(), out int valor))
+            {
+                juego.Valoracion = valor;
+            }
+        }
     }
 
     // =========================================================
     // 10. CLASES AUXILIARES (MODELOS DE DATOS)
     // =========================================================
-    public class DatosJuego
+    public class DatosJuego : System.ComponentModel.INotifyPropertyChanged
     {
         public string Titulo { get; set; }
         public decimal Precio { get; set; }
         public string Genero { get; set; }
+
+        private int valoracion = 0;
+        public int Valoracion
+        {
+            get => valoracion;
+            set
+            {
+                if (valoracion != value)
+                {
+                    valoracion = value;
+                    PropertyChanged?.Invoke(this, new System.ComponentModel.PropertyChangedEventArgs(nameof(Valoracion)));
+                }
+            }
+        }
+
+        public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
     }
 
     public class MetodoPago
