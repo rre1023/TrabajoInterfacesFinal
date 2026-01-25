@@ -15,7 +15,7 @@ namespace TrabajoInterfacesFinal
     {
         // =========================================================
         // 1. VARIABLES Y LISTAS GLOBALES
-        // =========================================================
+        // ========================================================= 
         #region Variables Globales
 
         // Listas de datos
