@@ -37,7 +37,6 @@ namespace TrabajoInterfacesFinal
         DatosJuego juegoActualEnDetalle = new DatosJuego();
         private ObservableCollection<DatosJuego> bibliotecaJuegos = new ObservableCollection<DatosJuego>();
 
-        private ObservableCollection<DatosJuego> bibliotecaJuegos = new ObservableCollection<DatosJuego>();
 
         Usuario usuarioActual;
         #endregion
@@ -406,11 +405,12 @@ namespace TrabajoInterfacesFinal
                     {
                         try
                         {
-                            string rutaCompleta = Path.GetFullPath(juegoCompleto.Imagen);
+                            string directorioBase = AppDomain.CurrentDomain.BaseDirectory;
+                            string rutaCompleta = System.IO.Path.Combine(directorioBase, juegoCompleto.Imagen);
                             
                             if (File.Exists(rutaCompleta))
                             {
-                                var imagen = new Image
+                                var imagen = new System.Windows.Controls.Image
                                 {
                                     Source = new System.Windows.Media.Imaging.BitmapImage(new Uri(rutaCompleta, UriKind.Absolute)),
                                     Stretch = Stretch.UniformToFill
@@ -420,6 +420,7 @@ namespace TrabajoInterfacesFinal
                             else
                             {
                                 imagenBorder.Background = Brushes.DarkRed;
+                                System.Diagnostics.Debug.WriteLine($"Imagen no encontrada: {rutaCompleta}");
                             }
                         }
                         catch (Exception ex)
@@ -430,7 +431,7 @@ namespace TrabajoInterfacesFinal
                     }
 
                     TextBlock genero = new TextBlock { Text = juego.Genero.ToUpper(), Foreground = Brushes.Gray, FontSize = 10, Margin = new Thickness(10, 0, 0, 0) };
-                    TextBlock titulo = new TextBlock { Text = juego.Titulo, Foreground = Brushes.White, FontWeight = FontWeights.Bold, Margin = new Thickness(10, 2, 0, 0), TextTrimming = TextTrimming.CharacterEllipsis };
+                    TextBlock titulo = new TextBlock { Text = juego.Titulo, Foreground = Brushes.White, FontWeight = System.Windows.FontWeights.Bold, Margin = new Thickness(10, 2, 0, 0), TextTrimming = TextTrimming.CharacterEllipsis };
                     TextBlock precio = new TextBlock { Text = juego.Precio + "€", Foreground = Brushes.LightGreen, Margin = new Thickness(10, 5, 0, 10) };
 
                     Button btnVer = new Button { Content = "Ver", Height = 25, Margin = new Thickness(10, 0, 10, 0), Background = new SolidColorBrush(Color.FromRgb(60, 64, 75)), Foreground = Brushes.White, BorderThickness = new Thickness(0) };
@@ -504,16 +505,19 @@ namespace TrabajoInterfacesFinal
                     {
                         try
                         {
-                            string rutaCompleta = Path.GetFullPath(juegoCompleto.Imagen);
+                            string directorioBase = AppDomain.CurrentDomain.BaseDirectory;
+                            string rutaCompleta = System.IO.Path.Combine(directorioBase, juegoCompleto.Imagen);
                             
                             if (File.Exists(rutaCompleta))
                             {
                                 imgDetalleJuego.Source = new System.Windows.Media.Imaging.BitmapImage(new Uri(rutaCompleta, UriKind.Absolute));
+                                borderDetalleImagen.Background = Brushes.Black;
                             }
                             else
                             {
                                 imgDetalleJuego.Source = null;
                                 borderDetalleImagen.Background = Brushes.DarkRed;
+                                System.Diagnostics.Debug.WriteLine($"Imagen no encontrada en detalle: {rutaCompleta}");
                             }
                         }
                         catch (Exception ex)
