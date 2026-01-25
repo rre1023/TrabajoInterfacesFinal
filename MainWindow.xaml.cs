@@ -665,12 +665,21 @@ namespace TrabajoInterfacesFinal
                 if (j.Titulo == juegoActualEnDetalle.Titulo) { MessageBox.Show("Ya está en el carrito."); Nav_Carrito_Click(null, null); return; }
             }
 
-            carrito.Add(new DatosJuego
+            using (var db = new AppDbContext())
             {
-                Titulo = juegoActualEnDetalle.Titulo,
-                Precio = juegoActualEnDetalle.Precio,
-                Genero = juegoActualEnDetalle.Genero
-            });
+                var juegoCompleto = db.Juegos.FirstOrDefault(j => j.Titulo == juegoActualEnDetalle.Titulo);
+                if (juegoCompleto != null)
+                {
+                    carrito.Add(new DatosJuego
+                    {
+                        Titulo = juegoActualEnDetalle.Titulo,
+                        Precio = juegoActualEnDetalle.Precio,
+                        Genero = juegoActualEnDetalle.Genero,
+                        Imagen = juegoCompleto.Imagen
+                    });
+                }
+            }
+            
             MessageBox.Show("Añadido al carrito");
             ActualizarVistaCarrito();
         }
@@ -683,16 +692,29 @@ namespace TrabajoInterfacesFinal
             decimal total = 0;
             foreach (var item in carrito) total += item.Precio;
 
-            txtTotalCarrito.Text = total + "€";
+            txtTotalCarrito.Text = total.ToString("0.00") + "€";
+            txtSubtotal.Text = total.ToString("0.00") + "€";
+            txtCantidadItems.Text = carrito.Count.ToString();
+            
+            if (usuarioActual != null)
+            {
+                txtSaldoCarrito.Text = usuarioActual.Saldo.ToString("0.00") + "€";
+            }
+            
+            // Mostrar mensaje de carrito vacío si no hay items
+            if (this.FindName("mensajeCarritoVacio") is StackPanel panelVacio)
+            {
+                panelVacio.Visibility = carrito.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+            }
         }
 
         private void BtnEliminarCarrito_Click(object sender, RoutedEventArgs e)
         {
-            if (listaCarrito.SelectedItem != null)
+            if (sender is Button btn && btn.Tag is DatosJuego juegoAEliminar)
             {
-                DatosJuego juegoAEliminar = (DatosJuego)listaCarrito.SelectedItem;
                 carrito.Remove(juegoAEliminar);
                 ActualizarVistaCarrito();
+                MessageBox.Show($"{juegoAEliminar.Titulo} eliminado del carrito", "Artículo eliminado", MessageBoxButton.OK, MessageBoxImage.Information);
             }
         }
 

@@ -342,31 +342,299 @@ Cursor="Hand">
 
 
                 <Grid x:Name="Grid_Carrito" Visibility="Collapsed" Margin="30">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="300"/>
+                        <ColumnDefinition Width="380"/>
                     </Grid.ColumnDefinitions>
-                    <StackPanel Grid.Column="0">
-                        <TextBlock Text="TU CARRO" FontSize="28" Foreground="White" Margin="0,0,0,20"/>
-                        <ListBox x:Name="listaCarrito" Background="#161920" Foreground="White" Height="400" BorderThickness="0">
-                            <ListBox.ItemTemplate>
-                                <DataTemplate>
-                                    <Grid Width="400">
-                                        <TextBlock Text="{Binding Titulo}" Foreground="White" FontSize="14" HorizontalAlignment="Left"/>
-                                        <TextBlock Text="{Binding Precio, StringFormat={}{0}€}" Foreground="#66c0f4" FontSize="14" HorizontalAlignment="Right"/>
-                                    </Grid>
-                                </DataTemplate>
-                            </ListBox.ItemTemplate>
-                        </ListBox>
-                        <Button Content="Eliminar Seleccionado" Click="BtnEliminarCarrito_Click" Background="#c94f4f" Foreground="White" Width="150" Height="30" HorizontalAlignment="Left" Margin="0,10,0,0"/>
+                    
+                    <!-- Sección izquierda - Lista de juegos -->
+                    <StackPanel Grid.Column="0" Grid.Row="0" Grid.RowSpan="3" Margin="0,0,20,0">
+                        <TextBlock Text="TU CARRITO DE COMPRA" 
+                                   FontSize="28" 
+                                   Foreground="White" 
+                                   FontWeight="Bold"
+                                   Margin="0,0,0,10"/>
+                        <TextBlock Text="Revisa tus artículos antes de proceder al pago" 
+                                   FontSize="13" 
+                                   Foreground="#8A8A8A" 
+                                   Margin="0,0,0,25"/>
+                        
+                        <ScrollViewer VerticalScrollBarVisibility="Auto" MaxHeight="500">
+                            <ItemsControl x:Name="listaCarrito" Background="Transparent">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Background="#232F3E" 
+                                                CornerRadius="8" 
+                                                Margin="0,0,0,15" 
+                                                Padding="15"
+                                                BorderBrush="#3A4A5A"
+                                                BorderThickness="1">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="140"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+                                                
+                                                <!-- Imagen del juego -->
+                                                <Border Grid.Column="0" 
+                                                        Width="120" 
+                                                        Height="80" 
+                                                        Background="Black" 
+                                                        CornerRadius="5" 
+                                                        Margin="0,0,15,0">
+                                                    <Image Source="{Binding Imagen, Converter={StaticResource ImagePathConverter}}" 
+                                                           Stretch="UniformToFill"/>
+                                                </Border>
+                                                
+                                                <!-- Información del juego -->
+                                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                                    <TextBlock Text="{Binding Titulo}" 
+                                                               Foreground="White" 
+                                                               FontWeight="Bold" 
+                                                               FontSize="16"
+                                                               TextWrapping="Wrap"/>
+                                                    <TextBlock Text="{Binding Genero}" 
+                                                               Foreground="#7FC7A3" 
+                                                               FontSize="12" 
+                                                               Margin="0,4,0,0"/>
+                                                </StackPanel>
+                                                
+                                                <!-- Precio y botón eliminar -->
+                                                <StackPanel Grid.Column="2" VerticalAlignment="Center" Margin="15,0,0,0">
+                                                    <TextBlock Text="{Binding Precio, StringFormat={}{0}€}" 
+                                                               Foreground="#66c0f4" 
+                                                               FontSize="18" 
+                                                               FontWeight="Bold"
+                                                               HorizontalAlignment="Right"
+                                                               Margin="0,0,0,10"/>
+                                                    <Button Content="🗑 Eliminar"
+                                                            Padding="10,6"
+                                                            Background="#c94f4f"
+                                                            Foreground="White"
+                                                            FontSize="11"
+                                                            BorderThickness="0"
+                                                            Cursor="Hand"
+                                                            Click="BtnEliminarCarrito_Click"
+                                                            Tag="{Binding}">
+                                                        <Button.Style>
+                                                            <Style TargetType="Button">
+                                                                <Setter Property="Template">
+                                                                    <Setter.Value>
+                                                                        <ControlTemplate TargetType="Button">
+                                                                            <Border Background="{TemplateBinding Background}" 
+                                                                                    CornerRadius="4"
+                                                                                    Padding="{TemplateBinding Padding}">
+                                                                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                                            </Border>
+                                                                        </ControlTemplate>
+                                                                    </Setter.Value>
+                                                                </Setter>
+                                                                <Style.Triggers>
+                                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                                        <Setter Property="Background" Value="#d63939"/>
+                                                                    </Trigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </Button.Style>
+                                                    </Button>
+                                                </StackPanel>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
+                        
+                        <!-- Mensaje cuando el carrito está vacío -->
+                        <StackPanel x:Name="mensajeCarritoVacio" 
+                                    Visibility="Collapsed"
+                                    HorizontalAlignment="Center" 
+                                    VerticalAlignment="Center"
+                                    Margin="0,100,0,0">
+                            <TextBlock Text="🛒" 
+                                       FontSize="72" 
+                                       Foreground="#3A4A5A"
+                                       HorizontalAlignment="Center"
+                                       Margin="0,0,0,20"/>
+                            <TextBlock Text="Tu carrito está vacío" 
+                                       FontSize="24" 
+                                       Foreground="#8A8A8A"
+                                       HorizontalAlignment="Center"
+                                       Margin="0,0,0,10"/>
+                            <TextBlock Text="Explora la tienda y añade juegos increíbles" 
+                                       FontSize="14" 
+                                       Foreground="#6A6A6A"
+                                       HorizontalAlignment="Center"
+                                       Margin="0,0,0,30"/>
+                            <Button Content="IR A LA TIENDA" 
+                                    Click="Nav_Tienda_Click"
+                                    Style="{StaticResource BotonVerde}"
+                                    Height="45"
+                                    Width="200"
+                                    FontSize="14"/>
+                        </StackPanel>
                     </StackPanel>
-                    <Border Grid.Column="1" Background="#14171e" Padding="20" Height="200" VerticalAlignment="Top">
+                    
+                    <!-- Panel derecho - Resumen de compra -->
+                    <Border Grid.Column="1" 
+                            Grid.Row="0"
+                            Grid.RowSpan="3"
+                            Background="#14171e" 
+                            CornerRadius="8" 
+                            Padding="25"
+                            VerticalAlignment="Top">
                         <StackPanel>
-                            <DockPanel Margin="0,0,0,20">
-                                <TextBlock Text="Total estimado:" Foreground="White" FontWeight="Bold"/>
-                                <TextBlock x:Name="txtTotalCarrito" Text="0.00€" DockPanel.Dock="Right" Foreground="White" FontWeight="Bold"/>
-                            </DockPanel>
-                            <Button Content="PAGAR AHORA" Click="BtnPagarCarrito_Click" Height="45" Style="{StaticResource BotonVerde}"/>
+                            <TextBlock Text="RESUMEN DE COMPRA" 
+                                       Foreground="White" 
+                                       FontSize="20"
+                                       FontWeight="Bold"
+                                       Margin="0,0,0,25"/>
+
+                            <!-- Detalles del pedido -->
+                            <Border Background="#1b2838" 
+                                    Padding="15" 
+                                    CornerRadius="5" 
+                                    Margin="0,0,0,20">
+                                <StackPanel>
+                                    <DockPanel Margin="0,0,0,15">
+                                        <TextBlock Text="Artículos:" 
+                                                   Foreground="#a3b3c1" 
+                                                   FontSize="14"
+                                                   VerticalAlignment="Center"/>
+                                        <TextBlock x:Name="txtCantidadItems" 
+                                                   Text="0" 
+                                                   DockPanel.Dock="Right" 
+                                                   Foreground="White" 
+                                                   FontSize="14"
+                                                   FontWeight="SemiBold"
+                                                   VerticalAlignment="Center"
+                                                   Margin="10,0"/>
+                                    </DockPanel>
+                                    
+                                    <DockPanel Margin="0,0,0,15">
+                                        <TextBlock Text="Subtotal:" 
+                                                   Foreground="#a3b3c1" 
+                                                   FontSize="14"
+                                                   VerticalAlignment="Center"/>
+                                        <TextBlock x:Name="txtSubtotal" 
+                                                   Text="0.00€" 
+                                                   DockPanel.Dock="Right" 
+                                                   Foreground="White" 
+                                                   FontSize="14"
+                                                   FontWeight="SemiBold"
+                                                   VerticalAlignment="Center"
+                                                   Margin="10,0"/>
+                                    </DockPanel>
+                                    
+                                    <Separator Background="#3A4A5A" Margin="0,5,0,15"/>
+                                    
+                                    <DockPanel Margin="0,5,0,0">
+                                        <TextBlock Text="TOTAL:" 
+                                                   Foreground="White" 
+                                                   FontWeight="Bold"
+                                                   FontSize="18"
+                                                   VerticalAlignment="Center"/>
+                                        <TextBlock x:Name="txtTotalCarrito" 
+                                                   Text="0.00€" 
+                                                   DockPanel.Dock="Right" 
+                                                   Foreground="#66c0f4" 
+                                                   FontWeight="Bold"
+                                                   FontSize="22"
+                                                   VerticalAlignment="Center"
+                                                   Margin="10,0"/>
+                                    </DockPanel>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Información del saldo -->
+                            <Border Background="#2a475e" 
+                                    Padding="15" 
+                                    CornerRadius="5" 
+                                    Margin="0,0,0,20">
+                                <DockPanel>
+                                    <TextBlock Text="💰 Tu saldo:" 
+                                               Foreground="#c7d5e0" 
+                                               FontSize="14"
+                                               VerticalAlignment="Center"/>
+                                    <TextBlock x:Name="txtSaldoCarrito" 
+                                               Text="0.00€" 
+                                               DockPanel.Dock="Right" 
+                                               Foreground="#90EE90" 
+                                               FontSize="17"
+                                               FontWeight="Bold"
+                                               VerticalAlignment="Center"
+                                               Margin="10,0"/>
+                                </DockPanel>
+                            </Border>
+
+                            <!-- Botón de pago -->
+                            <Button Content="PROCEDER AL PAGO" 
+                                    Click="BtnPagarCarrito_Click" 
+                                    Height="50" 
+                                    Style="{StaticResource BotonVerde}"
+                                    FontSize="16"
+                                    Margin="0,0,0,15"/>
+                            
+                            <!-- Botón continuar comprando -->
+                            <Button Content="Continuar Comprando" 
+                                    Click="Nav_Tienda_Click"
+                                    Height="40"
+                                    Background="Transparent"
+                                    Foreground="#66c0f4"
+                                    BorderBrush="#66c0f4"
+                                    BorderThickness="1"
+                                    FontSize="13"
+                                    Cursor="Hand">
+                                <Button.Style>
+                                    <Style TargetType="Button">
+                                        <Setter Property="Template">
+                                            <Setter.Value>
+                                                <ControlTemplate TargetType="Button">
+                                                    <Border Background="{TemplateBinding Background}" 
+                                                            BorderBrush="{TemplateBinding BorderBrush}"
+                                                            BorderThickness="{TemplateBinding BorderThickness}"
+                                                            CornerRadius="4"
+                                                            Padding="10">
+                                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                    </Border>
+                                                </ControlTemplate>
+                                            </Setter.Value>
+                                        </Setter>
+                                        <Style.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter Property="Background" Value="#2a3f5a"/>
+                                            </Trigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
+                            
+                            <!-- Información adicional -->
+                            <StackPanel Margin="0,25,0,0">
+                                <TextBlock Text="ℹ️ Información de compra" 
+                                           Foreground="#66c0f4" 
+                                           FontSize="12"
+                                           FontWeight="Bold"
+                                           Margin="0,0,0,10"/>
+                                <TextBlock Text="• Acceso inmediato tras la compra" 
+                                           Foreground="#8A8A8A" 
+                                           FontSize="11"
+                                           Margin="0,0,0,5"/>
+                                <TextBlock Text="• Los juegos se añaden a tu biblioteca" 
+                                           Foreground="#8A8A8A" 
+                                           FontSize="11"
+                                           Margin="0,0,0,5"/>
+                                <TextBlock Text="• Descarga las veces que quieras" 
+                                           Foreground="#8A8A8A" 
+                                           FontSize="11"/>
+                            </StackPanel>
                         </StackPanel>
                     </Border>
                 </Grid>
