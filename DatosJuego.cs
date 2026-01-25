@@ -1,3 +1,5 @@
+using System.ComponentModel;
+
 public class DatosJuego : INotifyPropertyChanged
 {
     public string Titulo { get; set; }
@@ -13,9 +15,15 @@ public class DatosJuego : INotifyPropertyChanged
             if (valoracion != value)
             {
                 valoracion = value;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Valoracion)));
+                OnPropertyChanged(nameof(Valoracion));
             }
         }
     }
+
     public event PropertyChangedEventHandler PropertyChanged;
+
+    protected void OnPropertyChanged(string propertyName)
+    {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+    }
 }

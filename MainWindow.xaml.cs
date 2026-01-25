@@ -8,6 +8,10 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using System.Diagnostics; // Para abrir el PDF
 
+using Microsoft.EntityFrameworkCore;
+
+
+
 // LIBRERÍAS PARA ITEXT 9 (La versión que tienes instalada)
 using iText.Kernel.Pdf;
 using iText.Layout;
@@ -34,12 +38,13 @@ namespace TrabajoInterfacesFinal
 
         private ObservableCollection<DatosJuego> bibliotecaJuegos = new ObservableCollection<DatosJuego>();
 
+        Usuario usuarioActual;
         #endregion
 
         // =========================================================
         // 2. INICIO
         // =========================================================
-        public MainWindow()
+        public MainWindow() 
         {
             InitializeComponent();
             
