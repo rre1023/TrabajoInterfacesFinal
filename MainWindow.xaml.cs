@@ -1,11 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
+using System.Collections.ObjectModel; // Para ObservableCollection
 using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using System.Diagnostics; // Para abrir el PDF
+
+// LIBRERÍAS PARA ITEXT 9 (La versión que tienes instalada)
+using iText.Kernel.Pdf;
+using iText.Layout;
+using iText.Layout.Element;
+using iText.Layout.Properties;
+using iText.Kernel.Geom;
+using iText.IO.Font.Constants;
+using iText.Kernel.Font;
 
 namespace TrabajoInterfacesFinal
 {
@@ -18,34 +28,30 @@ namespace TrabajoInterfacesFinal
 
         decimal saldo = 100.00m;
 
-        // Listas de datos
         List<DatosJuego> carrito = new List<DatosJuego>();
         List<MetodoPago> misMetodosPago = new List<MetodoPago>();
-
-        // Catálogo maestro para filtros
         List<DatosJuego> catalogoCompleto = new List<DatosJuego>();
-
-        // Variable temporal para detalle
         DatosJuego juegoActualEnDetalle = new DatosJuego();
 
-        // Cambiado a ObservableCollection<DatosJuego>
         private ObservableCollection<DatosJuego> bibliotecaJuegos = new ObservableCollection<DatosJuego>();
 
         #endregion
 
         // =========================================================
-        // 2. INICIO DE LA APLICACIÓN
+        // 2. INICIO
         // =========================================================
         public MainWindow()
         {
             InitializeComponent();
             CargarJuegosEnTienda();
             ActualizarSaldoVisual();
+
+            // Vinculamos la lista visual con nuestros datos
             listaBiblioteca.ItemsSource = bibliotecaJuegos;
         }
 
         // =========================================================
-        // 3. NAVEGACIÓN (VISIBILIDAD DE PANTALLAS)
+        // 3. NAVEGACIÓN
         // =========================================================
         #region Navegacion
 
@@ -69,14 +75,13 @@ namespace TrabajoInterfacesFinal
         {
             OcultarTodas();
             Grid_Biblioteca.Visibility = Visibility.Visible;
-            // El binding se encarga de refrescar la vista automáticamente
         }
 
         private void Nav_Perfil_Click(object sender, RoutedEventArgs e)
         {
             OcultarTodas();
             Grid_Perfil.Visibility = Visibility.Visible;
-            lblSaldoPerfil.Text = $"{saldo}€"; // Actualizar visualmente al entrar
+            lblSaldoPerfil.Text = $"{saldo}€";
             ActualizarCombosMetodos();
         }
 
@@ -90,11 +95,11 @@ namespace TrabajoInterfacesFinal
         #endregion
 
         // =========================================================
-        // 4. SISTEMA DE LOGIN
+        // 4. LOGIN
         // =========================================================
         #region Login
 
-        private void BtnLogin_Click(object sender, RoutedEventArgs e) //FRANCISCO TRABAJA
+        private void BtnLogin_Click(object sender, RoutedEventArgs e)
         {
             if (txtUserLogin.Text.Length > 0 && txtPassLogin.Password.Length > 0)
             {
@@ -104,7 +109,7 @@ namespace TrabajoInterfacesFinal
 
                 OcultarTodas();
                 Grid_Aplicacion.Visibility = Visibility.Visible;
-                Grid_Tienda.Visibility = Visibility.Visible; // Ir a tienda por defecto
+                Grid_Tienda.Visibility = Visibility.Visible;
             }
             else
             {
@@ -122,13 +127,12 @@ namespace TrabajoInterfacesFinal
         #endregion
 
         // =========================================================
-        // 5. TIENDA, FILTROS Y BUSCADOR
+        // 5. TIENDA LOGIC
         // =========================================================
         #region Tienda Logic
 
         private void CargarJuegosEnTienda()
         {
-            // Datos iniciales
             catalogoCompleto.Clear();
             catalogoCompleto.Add(new DatosJuego { Titulo = "Cyberpunk 2077", Precio = 59.99m, Genero = "RPG" });
             catalogoCompleto.Add(new DatosJuego { Titulo = "Elden Ring", Precio = 69.99m, Genero = "RPG" });
@@ -143,8 +147,6 @@ namespace TrabajoInterfacesFinal
 
         private void RenderizarJuegos(List<DatosJuego> listaParaMostrar)
         {
-            // --- CORRECCIÓN DEL ERROR DE PANELJUEGOS ---
-            // Buscamos el panel manualmente para evitar errores de enlace XAML
             WrapPanel panelVisual = this.FindName("PanelJuegos") as WrapPanel;
             if (panelVisual == null) return;
 
@@ -152,7 +154,6 @@ namespace TrabajoInterfacesFinal
 
             foreach (var juego in listaParaMostrar)
             {
-                // Crear Carta
                 Border carta = new Border
                 {
                     Width = 180,
@@ -164,15 +165,25 @@ namespace TrabajoInterfacesFinal
 
                 StackPanel panel = new StackPanel();
 
-                // Elementos visuales
                 Border imagen = new Border { Height = 120, Background = Brushes.Black, Margin = new Thickness(0, 0, 0, 10), CornerRadius = new CornerRadius(5, 5, 0, 0) };
+
                 TextBlock genero = new TextBlock { Text = juego.Genero.ToUpper(), Foreground = Brushes.Gray, FontSize = 10, Margin = new Thickness(10, 0, 0, 0) };
-                TextBlock titulo = new TextBlock { Text = juego.Titulo, Foreground = Brushes.White, FontWeight = FontWeights.Bold, Margin = new Thickness(10, 2, 0, 0), TextTrimming = TextTrimming.CharacterEllipsis };
+
+                // ESPECIFICAMOS QUE USAMOS LOS ESTILOS DE WINDOWS (WPF) AQUÍ
+                TextBlock titulo = new TextBlock
+                {
+                    Text = juego.Titulo,
+                    Foreground = Brushes.White,
+                    // CORRECCIÓN: Especificamos que es la propiedad de Windows
+                    FontWeight = System.Windows.FontWeights.Bold,
+                    Margin = new Thickness(10, 2, 0, 0),
+                    TextTrimming = TextTrimming.CharacterEllipsis
+                };
+
                 TextBlock precio = new TextBlock { Text = juego.Precio + "€", Foreground = Brushes.LightGreen, Margin = new Thickness(10, 5, 0, 10) };
 
                 Button btnVer = new Button { Content = "Ver", Height = 25, Margin = new Thickness(10, 0, 10, 0), Background = new SolidColorBrush(Color.FromRgb(60, 64, 75)), Foreground = Brushes.White, BorderThickness = new Thickness(0) };
 
-                // ASIGNAR EVENTO Y DATOS
                 btnVer.Tag = juego;
                 btnVer.Click += BtnVerDetalle_Click;
 
@@ -183,7 +194,6 @@ namespace TrabajoInterfacesFinal
                 panel.Children.Add(btnVer);
                 carta.Child = panel;
 
-                // Añadimos al panel encontrado
                 panelVisual.Children.Add(carta);
             }
         }
@@ -218,7 +228,7 @@ namespace TrabajoInterfacesFinal
         #endregion
 
         // =========================================================
-        // 6. DETALLES DEL PRODUCTO
+        // 6. DETALLES
         // =========================================================
         #region Detalles
 
@@ -226,7 +236,6 @@ namespace TrabajoInterfacesFinal
         {
             Button btn = sender as Button;
             DatosJuego datos = (DatosJuego)btn.Tag;
-
             juegoActualEnDetalle = datos;
 
             txtDetalleTitulo.Text = juegoActualEnDetalle.Titulo;
@@ -239,30 +248,19 @@ namespace TrabajoInterfacesFinal
         #endregion
 
         // =========================================================
-        // 7. CARRITO DE COMPRA
+        // 7. CARRITO
         // =========================================================
         #region Carrito
 
         private void BtnComprar_Click(object sender, RoutedEventArgs e)
         {
-            // Validar Biblioteca
             foreach (var j in bibliotecaJuegos)
             {
-                if (j.Titulo == juegoActualEnDetalle.Titulo)
-                {
-                    MessageBox.Show("¡Ya tienes este juego!");
-                    return;
-                }
+                if (j.Titulo == juegoActualEnDetalle.Titulo) { MessageBox.Show("¡Ya tienes este juego!"); return; }
             }
-            // Validar Carrito
             foreach (var j in carrito)
             {
-                if (j.Titulo == juegoActualEnDetalle.Titulo)
-                {
-                    MessageBox.Show("Ya está en el carrito.");
-                    Nav_Carrito_Click(null, null);
-                    return;
-                }
+                if (j.Titulo == juegoActualEnDetalle.Titulo) { MessageBox.Show("Ya está en el carrito."); Nav_Carrito_Click(null, null); return; }
             }
 
             carrito.Add(new DatosJuego
@@ -308,7 +306,6 @@ namespace TrabajoInterfacesFinal
                 saldo -= total;
                 ActualizarSaldoVisual();
 
-                // Añadir a la biblioteca solo si no existe ya
                 foreach (var item in carrito)
                 {
                     if (!bibliotecaJuegos.Any(j => j.Titulo == item.Titulo))
@@ -322,12 +319,11 @@ namespace TrabajoInterfacesFinal
                     }
                 }
 
-                // Generar Factura
-                GenerarFacturaTXT(new List<DatosJuego>(carrito), total);
+                // Generamos la factura PDF usando iText 9
+                GenerarFacturaPDF(new List<DatosJuego>(carrito), total);
 
                 carrito.Clear();
                 ActualizarVistaCarrito();
-
                 MessageBox.Show("¡Compra realizada!");
                 Nav_Biblioteca_Click(null, null);
             }
@@ -340,7 +336,7 @@ namespace TrabajoInterfacesFinal
         #endregion
 
         // =========================================================
-        // 8. PERFIL Y MÉTODOS DE PAGO (LÓGICA ANTIGUA ADAPTADA)
+        // 8. PERFIL
         // =========================================================
         #region Perfil Logic
 
@@ -350,7 +346,7 @@ namespace TrabajoInterfacesFinal
             MessageBox.Show("Perfil Actualizado");
         }
 
-        private void BtnGuardarMetodo_Click(object sender, RoutedEventArgs e) //FRANCISCO TRABAJA
+        private void BtnGuardarMetodo_Click(object sender, RoutedEventArgs e)
         {
             if (txtDatoNuevo.Text.Length < 4) { MessageBox.Show("Introduce un ID válido."); return; }
 
@@ -359,21 +355,18 @@ namespace TrabajoInterfacesFinal
                 Tipo = cmbTipoNuevo.Text,
                 Nombre = txtDatoNuevo.Text
             };
-
             misMetodosPago.Add(nuevoMetodo);
             MessageBox.Show("Método añadido.");
             txtDatoNuevo.Text = "";
             ActualizarCombosMetodos();
         }
 
-        private void ActualizarCombosMetodos() 
+        private void ActualizarCombosMetodos()
         {
-            // Actualiza el desplegable de arriba
             cmbMetodosGuardados.Items.Clear();
             foreach (var metodo in misMetodosPago) cmbMetodosGuardados.Items.Add(metodo);
             if (cmbMetodosGuardados.Items.Count > 0) cmbMetodosGuardados.SelectedIndex = 0;
 
-            // Actualiza la lista visual de abajo
             listaMetodosVisual.Items.Clear();
             foreach (var metodo in misMetodosPago) listaMetodosVisual.Items.Add($"{metodo.Tipo} - {metodo.Nombre}");
         }
@@ -403,87 +396,121 @@ namespace TrabajoInterfacesFinal
         #endregion
 
         // =========================================================
-        // 9. FACTURACIÓN (GENERAR TXT)
+        // 9. FACTURACIÓN PDF (PARA iTEXT 9.5.0)
         // =========================================================
-        #region Factura
+        #region Factura PDF
 
-        private void GenerarFacturaTXT(List<DatosJuego> juegosComprados, decimal totalPagado)
+        private void GenerarFacturaPDF(List<DatosJuego> juegosComprados, decimal totalPagado)
         {
             try
             {
-                string nombreArchivo = $"Factura_{DateTime.Now:yyyyMMdd_HHmmss}.txt";
-                System.Text.StringBuilder factura = new System.Text.StringBuilder();
+                // Guardar en el Escritorio para evitar problemas de permisos
+                string rutaEscritorio = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+                string nombreArchivo = $"Factura_TikTok_{Guid.NewGuid().ToString().Substring(0, 5)}.pdf";
+                string rutaCompleta = System.IO.Path.Combine(rutaEscritorio, nombreArchivo);
 
-                factura.AppendLine("========================================");
-                factura.AppendLine("          STEAM CLONE - FACTURA         ");
-                factura.AppendLine("========================================");
-                factura.AppendLine($"FECHA: {DateTime.Now}");
-                factura.AppendLine($"CLIENTE: {txtUsuarioMenu.Text}");
-                factura.AppendLine("----------------------------------------");
+                // CREAR FUENTES (iText 9)
+                PdfFont fontBold = PdfFontFactory.CreateFont(StandardFonts.HELVETICA_BOLD);
+                PdfFont fontNormal = PdfFontFactory.CreateFont(StandardFonts.HELVETICA);
+                PdfFont fontItalic = PdfFontFactory.CreateFont(StandardFonts.HELVETICA_OBLIQUE);
 
-                foreach (var juego in juegosComprados)
+                using (PdfWriter writer = new PdfWriter(rutaCompleta))
                 {
-                    factura.AppendLine(String.Format("{0,-30} | {1,7}€",
-                        juego.Titulo.Length > 25 ? juego.Titulo.Substring(0, 25) : juego.Titulo,
-                        juego.Precio));
+                    using (PdfDocument pdf = new PdfDocument(writer))
+                    {
+                        using (Document document = new Document(pdf))
+                        {
+                            // CABECERA
+                            // Usamos iText.Layout.Element.Paragraph para no chocar con WPF
+                            document.Add(new iText.Layout.Element.Paragraph("ENEVO - FACTURA")
+                                .SetFont(fontBold)
+                                .SetTextAlignment(iText.Layout.Properties.TextAlignment.CENTER)
+                                .SetFontSize(20));
+
+                            document.Add(new iText.Layout.Element.Paragraph($"Fecha: {DateTime.Now}")
+                                .SetFont(fontNormal)
+                                .SetTextAlignment(iText.Layout.Properties.TextAlignment.RIGHT)
+                                .SetFontSize(10));
+
+                            document.Add(new iText.Layout.Element.Paragraph($"Cliente: {txtUsuarioMenu.Text}")
+                                .SetFont(fontNormal)
+                                .SetFontSize(12));
+
+                            document.Add(new iText.Layout.Element.Paragraph("\n"));
+
+                            // TABLA
+                            iText.Layout.Element.Table table = new iText.Layout.Element.Table(UnitValue.CreatePercentArray(new float[] { 3, 1 }));
+                            table.SetWidth(UnitValue.CreatePercentValue(100));
+
+                            // Encabezados
+                            table.AddHeaderCell(new iText.Layout.Element.Cell().Add(new iText.Layout.Element.Paragraph("PRODUCTO").SetFont(fontBold)));
+                            table.AddHeaderCell(new iText.Layout.Element.Cell().Add(new iText.Layout.Element.Paragraph("PRECIO").SetFont(fontBold)));
+
+                            // Filas
+                            foreach (var juego in juegosComprados)
+                            {
+                                table.AddCell(new iText.Layout.Element.Paragraph(juego.Titulo).SetFont(fontNormal));
+                                table.AddCell(new iText.Layout.Element.Paragraph($"{juego.Precio}€").SetFont(fontNormal));
+                            }
+
+                            document.Add(table);
+
+                            // TOTALES
+                            document.Add(new iText.Layout.Element.Paragraph("\n"));
+                            decimal baseImponible = totalPagado / 1.21m;
+                            decimal iva = totalPagado - baseImponible;
+
+                            document.Add(new iText.Layout.Element.Paragraph($"Base Imponible: {baseImponible:F2}€")
+                                .SetFont(fontNormal)
+                                .SetTextAlignment(iText.Layout.Properties.TextAlignment.RIGHT));
+
+                            document.Add(new iText.Layout.Element.Paragraph($"IVA (21%): {iva:F2}€")
+                                .SetFont(fontNormal)
+                                .SetTextAlignment(iText.Layout.Properties.TextAlignment.RIGHT));
+
+                            document.Add(new iText.Layout.Element.Paragraph($"TOTAL PAGADO: {totalPagado:F2}€")
+                                .SetFont(fontBold)
+                                .SetTextAlignment(iText.Layout.Properties.TextAlignment.RIGHT)
+                                .SetFontSize(14));
+
+                            document.Add(new iText.Layout.Element.Paragraph("\n\nGracias por su compra digital.")
+                                .SetFont(fontItalic)
+                                .SetTextAlignment(iText.Layout.Properties.TextAlignment.CENTER));
+                        }
+                    }
                 }
 
-                factura.AppendLine("----------------------------------------");
-                factura.AppendLine($"TOTAL PAGADO:       {totalPagado:F2}€");
-                factura.AppendLine("========================================");
-
-                File.WriteAllText(nombreArchivo, factura.ToString());
-                System.Diagnostics.Process.Start("notepad.exe", nombreArchivo);
+                // ABRIR EL PDF AUTOMÁTICAMENTE
+                var p = new System.Diagnostics.Process();
+                p.StartInfo = new System.Diagnostics.ProcessStartInfo(rutaCompleta) { UseShellExecute = true };
+                p.Start();
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Error al factura: " + ex.Message);
+                MessageBox.Show("Error al generar PDF: " + ex.Message);
             }
         }
 
         #endregion
 
-        // Método para añadir un juego a la biblioteca
-        public void AgregarJuegoABiblioteca(DatosJuego juego)
-        {
-            if (!bibliotecaJuegos.Any(j => j.Titulo == juego.Titulo))
-            {
-                bibliotecaJuegos.Add(new DatosJuego
-                {
-                    Titulo = juego.Titulo,
-                    Genero = juego.Genero,
-                    Precio = juego.Precio
-                });
-            }
-        }
-
-        // Ejemplo: Llama a este método después de una compra exitosa
-        private void SimularCompra()
-        {
-            var juego = new DatosJuego { Titulo = "Elden Ring", Genero = "RPG", Precio = 59.99m };
-            AgregarJuegoABiblioteca(juego);
-        }
-
-        private void BtnEliminarBiblioteca_Click(object sender, RoutedEventArgs e)
-        {
-            if (sender is Button btn && btn.DataContext is DatosJuego juego)
-            {
-                bibliotecaJuegos.Remove(juego);
-            }
-        }
-
+        // =========================================================
+        // 10. EVENTO JUGAR
+        // =========================================================
         private void BtnJugarBiblioteca_Click(object sender, RoutedEventArgs e)
         {
             if (sender is Button btn && btn.DataContext is DatosJuego juego)
             {
-                MessageBox.Show($"¡Lanzando {juego.Titulo}!\n(Implementa aquí la lógica para abrir el juego)", "JUGAR", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show($"¡Lanzando {juego.Titulo}...", "JUGANDO", MessageBoxButton.OK, MessageBoxImage.Information);
             }
+        }
+
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+
         }
     }
 
-    // =========================================================
-    // 10. CLASES AUXILIARES (MODELOS DE DATOS)
-    // =========================================================
+    // CLASES AUXILIARES
     public class DatosJuego
     {
         public string Titulo { get; set; }
