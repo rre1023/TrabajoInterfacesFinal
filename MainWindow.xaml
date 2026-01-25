@@ -205,7 +205,7 @@ Cursor="Hand">
                         <TextBox x:Name="txtBuscador" Width="250" Height="35" Background="#223a50" Foreground="White" BorderThickness="0" VerticalContentAlignment="Center" Padding="10,0" TextChanged="TxtBuscador_TextChanged"/>
                         <TextBlock Text="🔍" VerticalAlignment="Center" Foreground="Gray" Margin="-30,0,20,0" IsHitTestVisible="False"/>
                         <ComboBox x:Name="cmbFiltroGenero" Width="180" Height="35" Background="#223a50" Foreground="Black" VerticalContentAlignment="Center" SelectionChanged="CmbFiltroGenero_SelectionChanged">
-                            <ComboBoxItem Content="Todas las géneros" IsSelected="True"/>
+                            <ComboBoxItem Content="Todos los géneros" IsSelected="True"/>
                             <ComboBoxItem Content="Acción"/>
                             <ComboBoxItem Content="RPG"/>
                             <ComboBoxItem Content="Aventura"/>
@@ -907,7 +907,7 @@ Cursor="Hand">
                                                  Margin="0,0,0,20" 
                                                  BorderBrush="#3A4A5A"
                                                  BorderThickness="1" 
-                                                 Padding="12"
+                                                 Padding="10"
                                                  FontSize="14"/>
 
                                         <!-- Correo electrónico -->

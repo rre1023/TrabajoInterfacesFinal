@@ -411,14 +411,156 @@ namespace TrabajoInterfacesFinal
 
         private void BtnLogout_Click(object sender, RoutedEventArgs e)
         {
-            Grid_Aplicacion.Visibility = Visibility.Collapsed;
-            Grid_Login.Visibility = Visibility.Visible;
-            txtPassLogin.Password = "";
-            txtUserLogin.Text = "";
-            usuarioActual = null;
-            misMetodosPago.Clear();
-            bibliotecaJuegos.Clear();
-            carrito.Clear();
+            var dialog = new Window
+            {
+                Title = "Cerrar Sesión",
+                Width = 450,
+                Height = 340,
+                WindowStartupLocation = WindowStartupLocation.CenterScreen,
+                Background = new SolidColorBrush(Color.FromRgb(27, 40, 56)),
+                ResizeMode = ResizeMode.NoResize,
+                WindowStyle = WindowStyle.None,
+                AllowsTransparency = true
+            };
+
+            var mainBorder = new Border
+            {
+                Background = new SolidColorBrush(Color.FromRgb(35, 47, 62)),
+                CornerRadius = new CornerRadius(10),
+                BorderBrush = new SolidColorBrush(Color.FromRgb(102, 192, 244)),
+                BorderThickness = new Thickness(2)
+            };
+
+            var stackPanel = new StackPanel { Margin = new Thickness(30) };
+
+            var iconoTexto = new TextBlock
+            {
+                Text = "⚠️",
+                FontSize = 48,
+                HorizontalAlignment = System.Windows.HorizontalAlignment.Center,
+                Margin = new Thickness(0, 10, 0, 20)
+            };
+
+            var txtTitulo = new TextBlock
+            {
+                Text = "¿Cerrar Sesión?",
+                Foreground = Brushes.White,
+                FontSize = 24,
+                FontWeight = System.Windows.FontWeights.Bold,
+                Margin = new Thickness(0, 0, 0, 15),
+                HorizontalAlignment = System.Windows.HorizontalAlignment.Center
+            };
+
+            var txtMensaje = new TextBlock
+            {
+                Text = "¿Estás seguro de que deseas cerrar sesión?\nTus datos estarán guardados de forma segura.",
+                Foreground = new SolidColorBrush(Color.FromRgb(163, 179, 193)),
+                FontSize = 14,
+                TextWrapping = TextWrapping.Wrap,
+                TextAlignment = System.Windows.TextAlignment.Center,
+                Margin = new Thickness(0, 0, 0, 30),
+                HorizontalAlignment = System.Windows.HorizontalAlignment.Center
+            };
+
+            var panelBotones = new StackPanel 
+            { 
+                Orientation = Orientation.Horizontal,
+                HorizontalAlignment = System.Windows.HorizontalAlignment.Center,
+                Margin = new Thickness(0, 10, 0, 0)
+            };
+
+            var cancelarStyle = new System.Windows.Style(typeof(Button));
+            cancelarStyle.Setters.Add(new Setter(Button.BackgroundProperty, new SolidColorBrush(Color.FromRgb(61, 68, 80))));
+            cancelarStyle.Setters.Add(new Setter(Button.BorderThicknessProperty, new Thickness(0)));
+            
+            var cancelarTemplate = new ControlTemplate(typeof(Button));
+            var cancelarFactory = new FrameworkElementFactory(typeof(Border));
+            cancelarFactory.SetValue(Border.BackgroundProperty, new TemplateBindingExtension(Button.BackgroundProperty));
+            cancelarFactory.SetValue(Border.CornerRadiusProperty, new CornerRadius(5));
+            cancelarFactory.SetValue(Border.PaddingProperty, new Thickness(10));
+            var cancelarContent = new FrameworkElementFactory(typeof(ContentPresenter));
+            cancelarContent.SetValue(ContentPresenter.HorizontalAlignmentProperty, System.Windows.HorizontalAlignment.Center);
+            cancelarContent.SetValue(ContentPresenter.VerticalAlignmentProperty, System.Windows.VerticalAlignment.Center);
+            cancelarFactory.AppendChild(cancelarContent);
+            cancelarTemplate.VisualTree = cancelarFactory;
+            cancelarStyle.Setters.Add(new Setter(Button.TemplateProperty, cancelarTemplate));
+            
+            var cancelarTrigger = new Trigger { Property = Button.IsMouseOverProperty, Value = true };
+            cancelarTrigger.Setters.Add(new Setter(Button.BackgroundProperty, new SolidColorBrush(Color.FromRgb(74, 85, 96))));
+            cancelarStyle.Triggers.Add(cancelarTrigger);
+
+            var btnCancelar = new Button
+            {
+                Content = "CANCELAR",
+                Width = 140,
+                Height = 45,
+                Margin = new Thickness(0, 0, 15, 0),
+                Foreground = Brushes.White,
+                FontSize = 14,
+                FontWeight = System.Windows.FontWeights.Bold,
+                Cursor = System.Windows.Input.Cursors.Hand,
+                Style = cancelarStyle
+            };
+
+            var confirmarStyle = new System.Windows.Style(typeof(Button));
+            confirmarStyle.Setters.Add(new Setter(Button.BackgroundProperty, new SolidColorBrush(Color.FromRgb(201, 79, 79))));
+            confirmarStyle.Setters.Add(new Setter(Button.BorderThicknessProperty, new Thickness(0)));
+            
+            var confirmarTemplate = new ControlTemplate(typeof(Button));
+            var confirmarFactory = new FrameworkElementFactory(typeof(Border));
+            confirmarFactory.SetValue(Border.BackgroundProperty, new TemplateBindingExtension(Button.BackgroundProperty));
+            confirmarFactory.SetValue(Border.CornerRadiusProperty, new CornerRadius(5));
+            confirmarFactory.SetValue(Border.PaddingProperty, new Thickness(10));
+            var confirmarContent = new FrameworkElementFactory(typeof(ContentPresenter));
+            confirmarContent.SetValue(ContentPresenter.HorizontalAlignmentProperty, System.Windows.HorizontalAlignment.Center);
+            confirmarContent.SetValue(ContentPresenter.VerticalAlignmentProperty, System.Windows.VerticalAlignment.Center);
+            confirmarFactory.AppendChild(confirmarContent);
+            confirmarTemplate.VisualTree = confirmarFactory;
+            confirmarStyle.Setters.Add(new Setter(Button.TemplateProperty, confirmarTemplate));
+            
+            var confirmarTrigger = new Trigger { Property = Button.IsMouseOverProperty, Value = true };
+            confirmarTrigger.Setters.Add(new Setter(Button.BackgroundProperty, new SolidColorBrush(Color.FromRgb(214, 57, 57))));
+            confirmarStyle.Triggers.Add(confirmarTrigger);
+
+            var btnConfirmar = new Button
+            {
+                Content = "SÍ, CERRAR SESIÓN",
+                Width = 180,
+                Height = 45,
+                Foreground = Brushes.White,
+                FontSize = 14,
+                FontWeight = System.Windows.FontWeights.Bold,
+                Cursor = System.Windows.Input.Cursors.Hand,
+                Style = confirmarStyle
+            };
+
+            btnCancelar.Click += (s, ev) => dialog.Close();
+
+            btnConfirmar.Click += (s, ev) =>
+            {
+                dialog.Close();
+                Grid_Aplicacion.Visibility = Visibility.Collapsed;
+                Grid_Login.Visibility = Visibility.Visible;
+                txtPassLogin.Password = "";
+                txtUserLogin.Text = "";
+                usuarioActual = null;
+                misMetodosPago.Clear();
+                bibliotecaJuegos.Clear();
+                carrito.Clear();
+            };
+
+            panelBotones.Children.Add(btnCancelar);
+            panelBotones.Children.Add(btnConfirmar);
+
+            stackPanel.Children.Add(iconoTexto);
+            stackPanel.Children.Add(txtTitulo);
+            stackPanel.Children.Add(txtMensaje);
+            stackPanel.Children.Add(panelBotones);
+
+            mainBorder.Child = stackPanel;
+            dialog.Content = mainBorder;
+            
+            dialog.ShowDialog();
         }
 
         #endregion
@@ -1120,7 +1262,7 @@ namespace TrabajoInterfacesFinal
                         if (juegoEnCatalogo != null)
                         {
                             juegoEnCatalogo.ValoracionPromedio = juego.ValoracionPromedio;
-                            juegoEnCatalogo.TotalValoraciones = juego.TotalValoraciones;
+                            juegoEnCatalogo.TotalValoraciones = juegoEnCatalogo.TotalValoraciones;
                         }
 
                         MessageBox.Show($"¡Valoración de {valoracionSeleccionada} estrellas guardada!", "Valoración Registrada", MessageBoxButton.OK, MessageBoxImage.Information);
