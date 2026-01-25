@@ -225,10 +225,10 @@ Cursor="Hand">
                     <StackPanel Grid.Column="0" Margin="0,0,20,0">
                         <Button Content="&lt; VOLVER A TIENDA" Click="Nav_Tienda_Click" Background="Transparent" Foreground="#66c0f4" BorderThickness="0" HorizontalAlignment="Left" Margin="0,0,0,20"/>
                         <TextBlock x:Name="txtDetalleTitulo" Text="TITULO JUEGO" FontSize="36" Foreground="White" FontWeight="Bold"/>
-                        <Border Height="300" Background="Black" Margin="0,20">
-                            <TextBlock Text="IMAGEN DEL JUEGO" Foreground="Gray" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                        <Border x:Name="borderDetalleImagen" Height="300" Background="Black" Margin="0,20" CornerRadius="5">
+                            <Image x:Name="imgDetalleJuego" Stretch="UniformToFill"/>
                         </Border>
-                        <TextBlock Text="Descripción detallada del juego..." Foreground="#acb2b8" TextWrapping="Wrap"/>
+                        <TextBlock x:Name="txtDetalleDescripcion" Text="Descripción detallada del juego..." Foreground="#acb2b8" TextWrapping="Wrap" FontSize="14" LineHeight="22"/>
 
                         <StackPanel x:Name="panelEstrellasDetalle" Orientation="Horizontal" Margin="0,6,0,0">
                             <Button Content="★" FontSize="18" Padding="0" Margin="0,0,2,0"

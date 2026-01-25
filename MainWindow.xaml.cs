@@ -21,13 +21,13 @@ using iText.Kernel.Geom;
 using iText.IO.Font.Constants;
 using iText.Kernel.Font;
 
-namespace TrabajoInterfacesFinal
+namespace TrabajoInterfacesFinal    
 {
     public partial class MainWindow : Window
     {
         // =========================================================
         // 1. VARIABLES Y LISTAS GLOBALES
-        // =========================================================
+        // ========================================================= 
         #region Variables Globales
 
         // Listas de datos
@@ -35,6 +35,7 @@ namespace TrabajoInterfacesFinal
         List<MetodoPago> misMetodosPago = new List<MetodoPago>();
         List<DatosJuego> catalogoCompleto = new List<DatosJuego>();
         DatosJuego juegoActualEnDetalle = new DatosJuego();
+        private ObservableCollection<DatosJuego> bibliotecaJuegos = new ObservableCollection<DatosJuego>();
 
         private ObservableCollection<DatosJuego> bibliotecaJuegos = new ObservableCollection<DatosJuego>();
 
@@ -50,6 +51,7 @@ namespace TrabajoInterfacesFinal
             
             using (var db = new AppDbContext())
             {
+                db.Database.EnsureDeleted();
                 db.Database.EnsureCreated();
                 
                 if (!db.Usuarios.Any())
@@ -59,8 +61,71 @@ namespace TrabajoInterfacesFinal
                         Nombre = "Admin",
                         Email = "admin@steam.com",
                         Contraseña = "1234",
-                        Saldo = 100.00m
+                        Saldo = 0m
                     });
+                    db.SaveChanges();
+                }
+
+                if (!db.Juegos.Any())
+                {
+                    db.Juegos.AddRange(
+                        new Juego
+                        {
+                            Titulo = "Cyberpunk 2077",
+                            Precio = 59.99m,
+                            Genero = "RPG",
+                            Imagen = "Fotos/cyberpunk.jpg",
+                            Descripcion = "Género: RPG / Acción Un juego de rol en mundo abierto ambientado en Night City, una megalópolis obsesionada con el poder, el glamur y la modificación corporal. Juegas como V, un mercenario proscrito que busca un implante único que es la clave de la inmortalidad. Destaca por su estética futurista, neones y una narrativa profunda donde tus decisiones afectan la historia."
+                        },
+                        new Juego
+                        {
+                            Titulo = "Elden Ring",
+                            Precio = 69.99m,
+                            Genero = "RPG",
+                            Imagen = "Fotos/eldenring.jpg",
+                            Descripcion = "Género: RPG / Fantasía Oscura Desarrollado por los creadores de Dark Souls con la colaboración de George R.R. Martin (Juego de Tronos). Es una aventura desafiante en un mundo abierto inmenso y desolado llamado las Tierras Intermedias. Es famoso por su alta dificultad, combates épicos contra jefes monstruosos y una total libertad de exploración sin guías."
+                        },
+                        new Juego
+                        {
+                            Titulo = "FIFA 24",
+                            Precio = 69.99m,
+                            Genero = "Deportes",
+                            Imagen = "Fotos/FIFA24.jpg",
+                            Descripcion = "Género: Deportes El simulador de fútbol más popular del mundo (ahora rebautizado como EA Sports FC). Ofrece la experiencia más realista de partidos con licencias oficiales de ligas, equipos y jugadores reales. Sus modos estrella son el \"Modo Carrera\" (gestionar un equipo) y \"Ultimate Team\" (crear tu equipo de ensueño con cartas de jugadores)."
+                        },
+                        new Juego
+                        {
+                            Titulo = "Call of Duty",
+                            Precio = 49.99m,
+                            Genero = "Acción",
+                            Imagen = "Fotos/Callofduty.jpg",
+                            Descripcion = "Género: Acción / Shooter (FPS) El rey de los disparos en primera persona. Es un juego de guerra frenético y cinematográfico. Aunque tiene campañas de historia (operaciones militares, espionaje), es mundialmente conocido por su multijugador online competitivo y rápido, donde los reflejos lo son todo."
+                        },
+                        new Juego
+                        {
+                            Titulo = "Zelda: TOTK",
+                            Precio = 59.99m,
+                            Genero = "Aventura",
+                            Imagen = "Fotos/Zelda.webp",
+                            Descripcion = "Género: Aventura La joya de Nintendo. Es la secuela de Breath of the Wild. Controlas a Link en el reino de Hyrule, pero esta vez puedes explorar islas flotantes en el cielo y profundidades subterráneas. Su gran novedad es la capacidad de construir vehículos y armas fusionando objetos del entorno con magia, fomentando la creatividad total del jugador."
+                        },
+                        new Juego
+                        {
+                            Titulo = "Age of Empires IV",
+                            Precio = 29.99m,
+                            Genero = "Estrategia",
+                            Imagen = "Fotos/Ageofempire.jpg",
+                            Descripcion = "Género: Estrategia (RTS) Un clásico de estrategia en tiempo real actualizado. Aquí eres el comandante: debes elegir una civilización histórica (ingleses, chinos, mongoles, etc.), recolectar recursos (madera, oro, comida), construir edificios, crear ejércitos y dirigir batallas tácticas para conquistar a tus enemigos. Es como jugar al ajedrez, pero con ejércitos vivos."
+                        },
+                        new Juego
+                        {
+                            Titulo = "God of War",
+                            Precio = 39.99m,
+                            Genero = "Acción",
+                            Imagen = "Fotos/Godofwar.jpg",
+                            Descripcion = "Género: Acción / Aventura Basado en la mitología nórdica. Sigues la historia de Kratos, un antiguo dios de la guerra griego que ahora vive en el retiro en tierras escandinavas con su hijo, Atreus. Es un viaje emotivo de padre e hijo con un combate brutal, visceral y unos gráficos impresionantes. Mezcla peleas intensas con puzles y exploración."
+                        }
+                    );
                     db.SaveChanges();
                 }
             }
@@ -106,6 +171,15 @@ namespace TrabajoInterfacesFinal
             Grid_Perfil.Visibility = Visibility.Visible;
             if (usuarioActual != null)
             {
+                using (var db = new AppDbContext())
+                {
+                    var usuario = db.Usuarios.Include(u => u.MetodosPago).FirstOrDefault(u => u.Id == usuarioActual.Id);
+                    if (usuario != null)
+                    {
+                        usuarioActual.Saldo = usuario.Saldo;
+                        misMetodosPago = usuario.MetodosPago.ToList();
+                    }
+                }
                 lblSaldoPerfil.Text = $"{usuarioActual.Saldo}€";
             }
             ActualizarCombosMetodos();
@@ -131,16 +205,20 @@ namespace TrabajoInterfacesFinal
             {
                 using (var db = new AppDbContext())
                 {
-                    var usuario = db.Usuarios.FirstOrDefault(u => 
-                        u.Nombre == txtUserLogin.Text && 
-                        u.Contraseña == txtPassLogin.Password);
+                    var usuario = db.Usuarios
+                        .Include(u => u.MetodosPago)
+                        .FirstOrDefault(u => 
+                            u.Nombre == txtUserLogin.Text && 
+                            u.Contraseña == txtPassLogin.Password);
 
                     if (usuario != null)
                     {
                         usuarioActual = usuario;
+                        misMetodosPago = usuario.MetodosPago.ToList();
                         txtUsuarioMenu.Text = usuario.Nombre;
                         txtEditUser.Text = usuario.Nombre;
                         ActualizarSaldoVisual();
+                        ActualizarCombosMetodos();
 
                         OcultarTodas();
                         Grid_Aplicacion.Visibility = Visibility.Visible;
@@ -260,6 +338,7 @@ namespace TrabajoInterfacesFinal
             txtPassLogin.Password = "";
             txtUserLogin.Text = "";
             usuarioActual = null;
+            misMetodosPago.Clear();
         }
 
         #endregion
@@ -272,13 +351,20 @@ namespace TrabajoInterfacesFinal
         private void CargarJuegosEnTienda()
         {
             catalogoCompleto.Clear();
-            catalogoCompleto.Add(new DatosJuego { Titulo = "Cyberpunk 2077", Precio = 59.99m, Genero = "RPG" });
-            catalogoCompleto.Add(new DatosJuego { Titulo = "Elden Ring", Precio = 69.99m, Genero = "RPG" });
-            catalogoCompleto.Add(new DatosJuego { Titulo = "FIFA 24", Precio = 69.99m, Genero = "Deportes" });
-            catalogoCompleto.Add(new DatosJuego { Titulo = "Call of Duty", Precio = 49.99m, Genero = "Acción" });
-            catalogoCompleto.Add(new DatosJuego { Titulo = "Zelda: TOTK", Precio = 59.99m, Genero = "Aventura" });
-            catalogoCompleto.Add(new DatosJuego { Titulo = "Age of Empires IV", Precio = 29.99m, Genero = "Estrategia" });
-            catalogoCompleto.Add(new DatosJuego { Titulo = "God of War", Precio = 39.99m, Genero = "Acción" });
+            
+            using (var db = new AppDbContext())
+            {
+                var juegos = db.Juegos.ToList();
+                foreach (var juego in juegos)
+                {
+                    catalogoCompleto.Add(new DatosJuego 
+                    { 
+                        Titulo = juego.Titulo, 
+                        Precio = juego.Precio, 
+                        Genero = juego.Genero 
+                    });
+                }
+            }
 
             RenderizarJuegos(catalogoCompleto);
         }
@@ -290,49 +376,77 @@ namespace TrabajoInterfacesFinal
 
             panelVisual.Children.Clear();
 
-            foreach (var juego in listaParaMostrar)
+            using (var db = new AppDbContext())
             {
-                Border carta = new Border
+                foreach (var juego in listaParaMostrar)
                 {
-                    Width = 180,
-                    Height = 250,
-                    Background = new SolidColorBrush(Color.FromRgb(22, 32, 45)),
-                    Margin = new Thickness(0, 0, 15, 15),
-                    CornerRadius = new CornerRadius(5)
-                };
+                    var juegoCompleto = db.Juegos.FirstOrDefault(j => j.Titulo == juego.Titulo);
+                    if (juegoCompleto == null) continue;
 
-                StackPanel panel = new StackPanel();
+                    Border carta = new Border
+                    {
+                        Width = 180,
+                        Height = 250,
+                        Background = new SolidColorBrush(Color.FromRgb(22, 32, 45)),
+                        Margin = new Thickness(0, 0, 15, 15),
+                        CornerRadius = new CornerRadius(5)
+                    };
 
-                Border imagen = new Border { Height = 120, Background = Brushes.Black, Margin = new Thickness(0, 0, 0, 10), CornerRadius = new CornerRadius(5, 5, 0, 0) };
+                    StackPanel panel = new StackPanel();
 
-                TextBlock genero = new TextBlock { Text = juego.Genero.ToUpper(), Foreground = Brushes.Gray, FontSize = 10, Margin = new Thickness(10, 0, 0, 0) };
+                    Border imagenBorder = new Border 
+                    { 
+                        Height = 120, 
+                        Margin = new Thickness(0, 0, 0, 10), 
+                        CornerRadius = new CornerRadius(5, 5, 0, 0),
+                        Background = Brushes.Black
+                    };
 
-                // ESPECIFICAMOS QUE USAMOS LOS ESTILOS DE WINDOWS (WPF) AQUÍ
-                TextBlock titulo = new TextBlock
-                {
-                    Text = juego.Titulo,
-                    Foreground = Brushes.White,
-                    // CORRECCIÓN: Especificamos que es la propiedad de Windows
-                    FontWeight = System.Windows.FontWeights.Bold,
-                    Margin = new Thickness(10, 2, 0, 0),
-                    TextTrimming = TextTrimming.CharacterEllipsis
-                };
+                    if (!string.IsNullOrEmpty(juegoCompleto.Imagen))
+                    {
+                        try
+                        {
+                            string rutaCompleta = Path.GetFullPath(juegoCompleto.Imagen);
+                            
+                            if (File.Exists(rutaCompleta))
+                            {
+                                var imagen = new Image
+                                {
+                                    Source = new System.Windows.Media.Imaging.BitmapImage(new Uri(rutaCompleta, UriKind.Absolute)),
+                                    Stretch = Stretch.UniformToFill
+                                };
+                                imagenBorder.Child = imagen;
+                            }
+                            else
+                            {
+                                imagenBorder.Background = Brushes.DarkRed;
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            imagenBorder.Background = Brushes.DarkOrange;
+                            System.Diagnostics.Debug.WriteLine($"Error cargando imagen: {ex.Message}");
+                        }
+                    }
 
-                TextBlock precio = new TextBlock { Text = juego.Precio + "€", Foreground = Brushes.LightGreen, Margin = new Thickness(10, 5, 0, 10) };
+                    TextBlock genero = new TextBlock { Text = juego.Genero.ToUpper(), Foreground = Brushes.Gray, FontSize = 10, Margin = new Thickness(10, 0, 0, 0) };
+                    TextBlock titulo = new TextBlock { Text = juego.Titulo, Foreground = Brushes.White, FontWeight = FontWeights.Bold, Margin = new Thickness(10, 2, 0, 0), TextTrimming = TextTrimming.CharacterEllipsis };
+                    TextBlock precio = new TextBlock { Text = juego.Precio + "€", Foreground = Brushes.LightGreen, Margin = new Thickness(10, 5, 0, 10) };
 
-                Button btnVer = new Button { Content = "Ver", Height = 25, Margin = new Thickness(10, 0, 10, 0), Background = new SolidColorBrush(Color.FromRgb(60, 64, 75)), Foreground = Brushes.White, BorderThickness = new Thickness(0) };
+                    Button btnVer = new Button { Content = "Ver", Height = 25, Margin = new Thickness(10, 0, 10, 0), Background = new SolidColorBrush(Color.FromRgb(60, 64, 75)), Foreground = Brushes.White, BorderThickness = new Thickness(0) };
 
-                btnVer.Tag = juego;
-                btnVer.Click += BtnVerDetalle_Click;
+                    btnVer.Tag = juego;
+                    btnVer.Click += BtnVerDetalle_Click;
 
-                panel.Children.Add(imagen);
-                panel.Children.Add(genero);
-                panel.Children.Add(titulo);
-                panel.Children.Add(precio);
-                panel.Children.Add(btnVer);
-                carta.Child = panel;
+                    panel.Children.Add(imagenBorder);
+                    panel.Children.Add(genero);
+                    panel.Children.Add(titulo);
+                    panel.Children.Add(precio);
+                    panel.Children.Add(btnVer);
+                    carta.Child = panel;
 
-                panelVisual.Children.Add(carta);
+                    panelVisual.Children.Add(carta);
+                }
             }
         }
 
@@ -374,16 +488,51 @@ namespace TrabajoInterfacesFinal
         {
             Button btn = sender as Button;
             DatosJuego datos = (DatosJuego)btn.Tag;
-            juegoActualEnDetalle = datos;
 
-            txtDetalleTitulo.Text = juegoActualEnDetalle.Titulo;
-            txtDetallePrecio.Text = juegoActualEnDetalle.Precio + "€";
-
-            // Añade esta línea para que el binding de las estrellas funcione
-            panelEstrellasDetalle.DataContext = juegoActualEnDetalle;
-
-            OcultarTodas();
-            Grid_Detalle.Visibility = Visibility.Visible;
+            using (var db = new AppDbContext())
+            {
+                var juegoCompleto = db.Juegos.FirstOrDefault(j => j.Titulo == datos.Titulo);
+                if (juegoCompleto != null)
+                {
+                    juegoActualEnDetalle = datos;
+                    txtDetalleTitulo.Text = juegoCompleto.Titulo;
+                    txtDetallePrecio.Text = juegoCompleto.Precio + "€";
+                    txtDetalleDescripcion.Text = juegoCompleto.Descripcion ?? "No hay descripción disponible.";
+                    
+                    // Cargar imagen
+                    if (!string.IsNullOrEmpty(juegoCompleto.Imagen))
+                    {
+                        try
+                        {
+                            string rutaCompleta = Path.GetFullPath(juegoCompleto.Imagen);
+                            
+                            if (File.Exists(rutaCompleta))
+                            {
+                                imgDetalleJuego.Source = new System.Windows.Media.Imaging.BitmapImage(new Uri(rutaCompleta, UriKind.Absolute));
+                            }
+                            else
+                            {
+                                imgDetalleJuego.Source = null;
+                                borderDetalleImagen.Background = Brushes.DarkRed;
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            imgDetalleJuego.Source = null;
+                            borderDetalleImagen.Background = Brushes.DarkOrange;
+                            System.Diagnostics.Debug.WriteLine($"Error cargando imagen en detalle: {ex.Message}");
+                        }
+                    }
+                    else
+                    {
+                        imgDetalleJuego.Source = null;
+                        borderDetalleImagen.Background = Brushes.Black;
+                    }
+                    
+                    OcultarTodas();
+                    Grid_Detalle.Visibility = Visibility.Visible;
+                }
+            }
         }
 
         #endregion
@@ -500,14 +649,28 @@ namespace TrabajoInterfacesFinal
 
         private void BtnGuardarMetodo_Click(object sender, RoutedEventArgs e)
         {
-            if (txtDatoNuevo.Text.Length < 4) { MessageBox.Show("Introduce un ID válido."); return; }
+            if (txtDatoNuevo.Text.Length < 4) 
+            { 
+                MessageBox.Show("Introduce un ID válido."); 
+                return; 
+            }
 
-            MetodoPago nuevoMetodo = new MetodoPago
+            using (var db = new AppDbContext())
             {
-                Tipo = cmbTipoNuevo.Text,
-                Nombre = txtDatoNuevo.Text
-            };
-            misMetodosPago.Add(nuevoMetodo);
+                MetodoPago nuevoMetodo = new MetodoPago
+                {
+                    UsuarioId = usuarioActual.Id,
+                    Tipo = cmbTipoNuevo.Text,
+                    Nombre = txtDatoNuevo.Text
+                };
+
+                db.MetodosPago.Add(nuevoMetodo);
+                db.SaveChanges();
+
+                misMetodosPago.Add(nuevoMetodo);
+                usuarioActual.MetodosPago.Add(nuevoMetodo);
+            }
+
             MessageBox.Show("Método añadido.");
             txtDatoNuevo.Text = "";
             ActualizarCombosMetodos();
@@ -708,8 +871,20 @@ namespace TrabajoInterfacesFinal
         public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
     }
 
+    public class Juego
+    {
+        public int Id { get; set; }
+        public string Titulo { get; set; }
+        public decimal Precio { get; set; }
+        public string Genero { get; set; }
+        public string Descripcion { get; set; }
+        public string Imagen { get; set; }
+    }
+
     public class MetodoPago
     {
+        public int Id { get; set; }
+        public int UsuarioId { get; set; }
         public string Nombre { get; set; }
         public string Tipo { get; set; }
         public override string ToString() { return $"{Tipo}: {Nombre}"; }
@@ -721,12 +896,15 @@ namespace TrabajoInterfacesFinal
         public string Nombre { get; set; }
         public string Email { get; set; }
         public string Contraseña { get; set; }
-        public decimal Saldo { get; set; } = 100.00m;
+        public decimal Saldo { get; set; } = 0m;
+        public List<MetodoPago> MetodosPago { get; set; } = new List<MetodoPago>();
     }
 
     public class AppDbContext : DbContext
     {
         public DbSet<Usuario> Usuarios { get; set; }
+        public DbSet<MetodoPago> MetodosPago { get; set; }
+        public DbSet<Juego> Juegos { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder options)
         {
@@ -742,6 +920,12 @@ namespace TrabajoInterfacesFinal
             modelBuilder.Entity<Usuario>()
                 .HasIndex(u => u.Email)
                 .IsUnique();
+
+            modelBuilder.Entity<MetodoPago>()
+                .HasOne<Usuario>()
+                .WithMany(u => u.MetodosPago)
+                .HasForeignKey(m => m.UsuarioId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }
