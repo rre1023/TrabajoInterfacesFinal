@@ -17,7 +17,10 @@
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
                         <Border Background="{TemplateBinding Background}">
-                            <ContentPresenter VerticalAlignment="Center" HorizontalAlignment="Left"/>
+                            <ContentPresenter
+    Content="{TemplateBinding Content}"
+    HorizontalAlignment="Center"
+    VerticalAlignment="Center"/>
                         </Border>
                     </ControlTemplate>
                 </Setter.Value>
@@ -109,23 +112,80 @@
             </Grid.ColumnDefinitions>
 
             <Border Grid.Column="0" Background="#171a21">
-                <StackPanel>
-                    <TextBlock Text="TIKTOK SHOP" Foreground="White" FontSize="20" FontWeight="Bold" Margin="20,30,0,30"/>
+                <StackPanel HorizontalAlignment="Center">
+                    <TextBlock Text="ENEVO" Foreground="White" FontSize="20" FontWeight="Bold" Margin="20,30,0,30"/>
 
-                    <Button Content="TIENDA" Click="Nav_Tienda_Click" Style="{StaticResource BotonMenu}"/>
-                    <Button x:Name="btnMenuCarrito" Click="Nav_Carrito_Click" Style="{StaticResource BotonMenu}" Foreground="#66c0f4" ToolTip="Ver Carrito de Compra">
-                        <Viewbox Width="26" Height="26" HorizontalAlignment="Center" VerticalAlignment="Center">
-                            <Path Fill="#66c0f4" Data="M17,18C15.89,18 15,18.89 15,20A2,2 0 0,0 17,22A2,2 0 0,0 19,20C19,18.89 18.1,18 17,18M1,2V4H3L6.6,11.59L5.24,14.04C5.09,14.32 5,14.65 5,15A2,2 0 0,0 7,17H19V15H7.42A0.25,0.25 0 0,1 7.17,14.75C7.17,14.7 7.18,14.66 7.2,14.63L8.1,13H15.55C16.3,13 16.96,12.58 17.3,11.97L21.16,4.96L21.16,4.96C21.27,4.76 21.17,4.5 20.96,4.4A0.26,0.26 0 0,0 20.78,4.37H5.21L4.27,2M7,18C5.89,18 5,18.89 5,20A2,2 0 0,0 7,22A2,2 0 0,0 9,20C9,18.89 8.1,18 7,18Z"/>
-                        </Viewbox>
-                    </Button>
-                    <Button Content="BIBLIOTECA" Click="Nav_Biblioteca_Click" Style="{StaticResource BotonMenu}"/>
-                    <Button Content="MI PERFIL" Click="Nav_Perfil_Click" Style="{StaticResource BotonMenu}"/>
+                    <Button Content="TIENDA" Click="Nav_Tienda_Click" Style="{StaticResource BotonMenu}" HorizontalContentAlignment="Center" />
+                    
+                    <Button Content="BIBLIOTECA" Click="Nav_Biblioteca_Click" Style="{StaticResource BotonMenu}" HorizontalContentAlignment="Center"/>
+                    <Button Content="MI PERFIL" Click="Nav_Perfil_Click" Style="{StaticResource BotonMenu}" HorizontalContentAlignment="Center"/>
 
-                    <StackPanel Margin="20,40,0,0">
-                        <TextBlock x:Name="txtUsuarioMenu" Text="Usuario" Foreground="#66c0f4" FontWeight="Bold"/>
-                        <TextBlock x:Name="txtSaldoMenu" Text="Cartera: 100.00€" Foreground="#a3b3c1" Margin="0,5,0,0"/>
+                    <StackPanel Orientation="Horizontal">
+
+
+                        <StackPanel Margin="20,40,0,0">
+                            <TextBlock x:Name="txtUsuarioMenu" Text="Usuario" Foreground="#66c0f4" FontWeight="Bold"/>
+                            <TextBlock x:Name="txtSaldoMenu" Text="Cartera: 100.00€" Foreground="#a3b3c1" Margin="0,5,0,0"/>
+
+                        </StackPanel>
+
+                        <Button x:Name="btnMenuCarrito" 
+Click="Nav_Carrito_Click" 
+Foreground="#66c0f4" 
+ToolTip="Ver Carrito de Compra" 
+Width="120" 
+Height="120" 
+Cursor="Hand">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border Background="Transparent">
+                                        <ContentPresenter
+        Content="{TemplateBinding Content}"
+        HorizontalAlignment="Center"
+        VerticalAlignment="Center"/>
+                                    </Border>
+                                </ControlTemplate>
+                            </Button.Template>
+
+
+                            <Button.RenderTransform>
+                                <ScaleTransform x:Name="scale" ScaleX="1" ScaleY="1"/>
+                            </Button.RenderTransform>
+                            <Button.RenderTransformOrigin>0.5,0.5</Button.RenderTransformOrigin>
+
+                            <Button.Style>
+                                <Style TargetType="Button">
+                                    <Style.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Trigger.EnterActions>
+                                                <BeginStoryboard>
+                                                    <Storyboard>
+                                                        <DoubleAnimation Storyboard.TargetProperty="(Button.RenderTransform).(ScaleTransform.ScaleX)" 
+                                         To="1.15" Duration="0:0:0.15"/>
+                                                        <DoubleAnimation Storyboard.TargetProperty="(Button.RenderTransform).(ScaleTransform.ScaleY)" 
+                                         To="1.15" Duration="0:0:0.15"/>
+                                                    </Storyboard>
+                                                </BeginStoryboard>
+                                            </Trigger.EnterActions>
+                                            <Trigger.ExitActions>
+                                                <BeginStoryboard>
+                                                    <Storyboard>
+                                                        <DoubleAnimation Storyboard.TargetProperty="(Button.RenderTransform).(ScaleTransform.ScaleX)" 
+                                         To="1" Duration="0:0:0.15"/>
+                                                        <DoubleAnimation Storyboard.TargetProperty="(Button.RenderTransform).(ScaleTransform.ScaleY)" 
+                                         To="1" Duration="0:0:0.15"/>
+                                                    </Storyboard>
+                                                </BeginStoryboard>
+                                            </Trigger.ExitActions>
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+
+                            <Image Source="/Imagen/ImagenCarrito.png" Stretch="Uniform" MaxWidth="50" MaxHeight="50" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+
+                        </Button>
                     </StackPanel>
-
                     <Button Content="Cerrar Sesión" Click="BtnLogout_Click" Margin="20,20,20,0" Height="30" Background="#2a3f5a" Foreground="White" BorderThickness="0"/>
                 </StackPanel>
             </Border>
