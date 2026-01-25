@@ -220,14 +220,23 @@ namespace TrabajoInterfacesFinal
             {
                 using (var db = new AppDbContext())
                 {
-                    var usuario = db.Usuarios.Include(u => u.MetodosPago).FirstOrDefault(u => u.Id == usuarioActual.Id);
+                    var usuario = db.Usuarios
+                        .Include(u => u.MetodosPago)
+                        .Include(u => u.BibliotecaJuegos)
+                        .FirstOrDefault(u => u.Id == usuarioActual.Id);
+                    
                     if (usuario != null)
                     {
                         usuarioActual.Saldo = usuario.Saldo;
                         misMetodosPago = usuario.MetodosPago.ToList();
+                        
+                        lblSaldoPerfil.Text = $"{usuarioActual.Saldo:0.00}€";
+                        txtCantidadJuegos.Text = usuario.BibliotecaJuegos.Count.ToString();
+                        
+                        var totalValoraciones = db.Valoraciones.Count(v => v.UsuarioId == usuarioActual.Id);
+                        txtCantidadValoraciones.Text = totalValoraciones.ToString();
                     }
                 }
-                lblSaldoPerfil.Text = $"{usuarioActual.Saldo}€";
             }
             ActualizarCombosMetodos();
         }
@@ -841,8 +850,8 @@ namespace TrabajoInterfacesFinal
             foreach (var metodo in misMetodosPago) cmbMetodosGuardados.Items.Add(metodo);
             if (cmbMetodosGuardados.Items.Count > 0) cmbMetodosGuardados.SelectedIndex = 0;
 
-            listaMetodosVisual.Items.Clear();
-            foreach (var metodo in misMetodosPago) listaMetodosVisual.Items.Add($"{metodo.Tipo} - {metodo.Nombre}");
+            listaMetodosVisual.ItemsSource = null;
+            listaMetodosVisual.ItemsSource = misMetodosPago.Select(m => $"{m.Tipo} - {m.Nombre}").ToList();
         }
 
         private void BtnIngresarDinero_Click(object sender, RoutedEventArgs e)

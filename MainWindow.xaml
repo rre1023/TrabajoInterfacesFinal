@@ -841,64 +841,411 @@ Cursor="Hand">
 </Grid>
 
                 <Grid x:Name="Grid_Perfil" Visibility="Collapsed" Margin="30">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="1*"/>
-                        <ColumnDefinition Width="1*"/>
-                    </Grid.ColumnDefinitions>
-
-                    <StackPanel Grid.Column="0" Margin="0,0,20,0">
-                        <TextBlock Text="MI CUENTA" FontSize="28" Foreground="White" Margin="0,0,0,30"/>
-
-                        <TextBlock Text="Nombre de Perfil" Foreground="#66c0f4" FontWeight="Bold"/>
-                        <TextBox x:Name="txtEditUser" Background="#2a3f5a" Foreground="White" Height="35" Margin="0,5,0,20" BorderThickness="0" Padding="5"/>
-
-                        <TextBlock Text="Correo Electrónico" Foreground="#66c0f4" FontWeight="Bold"/>
-                        <TextBox Text="usuario@ejemplo.com" Background="#2a3f5a" Foreground="White" Height="35" Margin="0,5,0,20" BorderThickness="0" Padding="5"/>
-
-                        <Button Content="Guardar Cambios" Width="150" Height="40" HorizontalAlignment="Left" Style="{StaticResource BotonVerde}" Click="BtnGuardarPerfil_Click"/>
-                    </StackPanel>
-
-                    <Border Grid.Column="1" Background="#14171e" CornerRadius="5" Padding="20">
-                        <StackPanel>
-                            <TextBlock Text="GESTIÓN DE SALDO" FontSize="22" Foreground="White" Margin="0,0,0,20"/>
-
-                            <Border Background="#2a475e" Padding="15" CornerRadius="3" Margin="0,0,0,20">
-                                <DockPanel>
-                                    <TextBlock Text="Saldo Actual:" Foreground="#c7d5e0" FontSize="16" VerticalAlignment="Center"/>
-                                    <TextBlock x:Name="lblSaldoPerfil" Text="100,00€" DockPanel.Dock="Right" Foreground="#66c0f4" FontSize="24" FontWeight="Bold"/>
-                                </DockPanel>
-                            </Border>
-
-                            <TextBlock Text="AÑADIR FONDOS" Foreground="White" FontWeight="Bold" Margin="0,0,0,10"/>
-                            <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
-                                <TextBox x:Name="txtCantidadRecarga" Width="100" Height="35" FontSize="16" VerticalContentAlignment="Center" Background="#000" Foreground="White" BorderThickness="1" BorderBrush="Gray" Text="10" Padding="5"/>
-                                <TextBlock Text="€" Foreground="White" FontSize="18" VerticalAlignment="Center" Margin="5,0,15,0"/>
-
-                                <ComboBox x:Name="cmbMetodosGuardados" Width="200" Height="35" Background="#2a3f5a" Foreground="Black"/>
+                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            
+                            <!-- Título de la sección -->
+                            <StackPanel Grid.Row="0" Margin="0,0,0,30">
+                                <TextBlock Text="MI PERFIL" 
+                                           FontSize="32" 
+                                           Foreground="White" 
+                                           FontWeight="Bold"
+                                           Margin="0,0,0,5"/>
+                                <TextBlock Text="Gestiona tu cuenta y configuración" 
+                                           FontSize="14" 
+                                           Foreground="#8A8A8A"/>
                             </StackPanel>
-                            <Button Content="+ Ingresar Dinero" Click="BtnIngresarDinero_Click" Background="#2a475e" Foreground="White" Height="35" Margin="0,0,0,30"/>
+                            
+                            <Grid Grid.Row="1">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="1.2*"/>
+                                    <ColumnDefinition Width="1*"/>
+                                </Grid.ColumnDefinitions>
 
-                            <Separator Background="#3d4450" Margin="0,10,0,20"/>
+                                <!-- Panel izquierdo - Información de cuenta -->
+                                <Border Grid.Column="0" 
+                                        Background="#232F3E" 
+                                        CornerRadius="8" 
+                                        Padding="25"
+                                        Margin="0,0,15,0"
+                                        BorderBrush="#3A4A5A"
+                                        BorderThickness="1">
+                                    <StackPanel>
+                                        <TextBlock Text="INFORMACIÓN DE LA CUENTA" 
+                                                   FontSize="20" 
+                                                   Foreground="White" 
+                                                   FontWeight="Bold"
+                                                   Margin="0,0,0,25"/>
 
-                            <TextBlock Text="AÑADIR NUEVO MÉTODO DE PAGO" Foreground="White" FontWeight="Bold" Margin="0,0,0,10"/>
+                                        <!-- Avatar del usuario -->
+                                        <Border Width="100" 
+                                                Height="100" 
+                                                Background="#3d4450"
+                                                CornerRadius="50"
+                                                HorizontalAlignment="Left"
+                                                Margin="0,0,0,25">
+                                            <TextBlock Text="👤" 
+                                                       FontSize="48" 
+                                                       HorizontalAlignment="Center"
+                                                       VerticalAlignment="Center"/>
+                                        </Border>
 
-                            <TextBlock Text="Tipo:" Foreground="Gray" Margin="0,5,0,0"/>
-                            <ComboBox x:Name="cmbTipoNuevo" Height="30" Margin="0,0,0,10" Foreground="Black">
-                                <ComboBoxItem Content="Tarjeta de Crédito/Débito" IsSelected="True"/>
-                                <ComboBoxItem Content="Google Pay"/>
-                                <ComboBoxItem Content="Tarjeta Prepago (Game/Steam)"/>
-                            </ComboBox>
+                                        <!-- Nombre de usuario -->
+                                        <TextBlock Text="Nombre de Usuario" 
+                                                   Foreground="#66c0f4" 
+                                                   FontWeight="Bold"
+                                                   FontSize="13"
+                                                   Margin="0,0,0,8"/>
+                                        <TextBox x:Name="txtEditUser" 
+                                                 Background="#1b2838" 
+                                                 Foreground="White" 
+                                                 Height="40" 
+                                                 Margin="0,0,0,20" 
+                                                 BorderBrush="#3A4A5A"
+                                                 BorderThickness="1" 
+                                                 Padding="12"
+                                                 FontSize="14"/>
 
-                            <TextBlock Text="Número / ID / Código:" Foreground="Gray" Margin="0,5,0,0"/>
-                            <TextBox x:Name="txtDatoNuevo" Background="#2a3f5a" Foreground="White" Height="30" BorderThickness="0" Margin="0,0,0,15"/>
+                                        <!-- Correo electrónico -->
+                                        <TextBlock Text="Correo Electrónico" 
+                                                   Foreground="#66c0f4" 
+                                                   FontWeight="Bold"
+                                                   FontSize="13"
+                                                   Margin="0,0,0,8"/>
+                                        <TextBox x:Name="txtEditEmail"
+                                                 Text="usuario@ejemplo.com" 
+                                                 Background="#1b2838" 
+                                                 Foreground="White" 
+                                                 Height="40" 
+                                                 Margin="0,0,0,30" 
+                                                 BorderBrush="#3A4A5A"
+                                                 BorderThickness="1" 
+                                                 Padding="10,7"
+                                                 FontSize="14"/>
 
-                            <Button Content="Guardar Método" Click="BtnGuardarMetodo_Click" Background="#3d4450" Foreground="White" Height="30"/>
+                                        <!-- Botón guardar cambios -->
+                                        <Button Content="💾 GUARDAR CAMBIOS" 
+                                                Height="45" 
+                                                HorizontalAlignment="Stretch" 
+                                                Style="{StaticResource BotonVerde}" 
+                                                Click="BtnGuardarPerfil_Click"
+                                                FontSize="14"/>
+                                        
+                                        <!-- Estadísticas del usuario -->
+                                        <Border Background="#1b2838" 
+                                                Padding="15" 
+                                                CornerRadius="5" 
+                                                Margin="0,30,0,0"
+                                                BorderBrush="#3A4A5A"
+                                                BorderThickness="1">
+                                            <StackPanel>
+                                                <TextBlock Text="📊 ESTADÍSTICAS" 
+                                                           Foreground="White" 
+                                                           FontWeight="Bold"
+                                                           FontSize="14"
+                                                           Margin="0,0,0,15"/>
+                                                
+                                                <Grid Margin="0,0,0,10">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Text="Juegos en biblioteca:" 
+                                                               Foreground="#a3b3c1" 
+                                                               FontSize="13"/>
+                                                    <TextBlock x:Name="txtCantidadJuegos"
+                                                               Text="0" 
+                                                               Grid.Column="1"
+                                                               Foreground="#66c0f4" 
+                                                               FontWeight="Bold"
+                                                               FontSize="13"/>
+                                                </Grid>
+                                        
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBlock Text="Valoraciones realizadas:" 
+                                                               Foreground="#a3b3c1" 
+                                                               FontSize="13"/>
+                                                    <TextBlock x:Name="txtCantidadValoraciones"
+                                                               Text="0" 
+                                                               Grid.Column="1"
+                                                               Foreground="#66c0f4" 
+                                                               FontWeight="Bold"
+                                                               FontSize="13"/>
+                                                </Grid>
+                                            </StackPanel>
+                                        </Border>
+                                    </StackPanel>
+                                </Border>
 
-                            <TextBlock Text="Métodos guardados:" Foreground="Gray" Margin="0,15,0,5"/>
-                            <ListBox x:Name="listaMetodosVisual" Height="80" Background="#000000" Foreground="Gray" BorderThickness="0"/>
+                                <!-- Panel derecho - Gestión de saldo y pagos -->
+                                <StackPanel Grid.Column="1" Margin="15,0,0,0">
+                                
+                                    <!-- Tarjeta de saldo -->
+                                    <Border Background="#14171e" 
+                                            CornerRadius="8" 
+                                            Padding="25"
+                                            Margin="0,0,0,20"
+                                            BorderBrush="#3A4A5A"
+                                            BorderThickness="1">
+                                        <StackPanel>
+                                            <TextBlock Text="💳 CARTERA DIGITAL" 
+                                                       FontSize="18" 
+                                                       Foreground="White" 
+                                                       FontWeight="Bold"
+                                                       Margin="0,0,0,20"/>
 
-                        </StackPanel>
-                    </Border>
+                                            <!-- Saldo actual destacado -->
+                                            <Border Background="#2a475e" 
+                                                    Padding="20" 
+                                                    CornerRadius="8" 
+                                                    Margin="0,0,0,25">
+                                                <StackPanel>
+                                                    <TextBlock Text="Saldo Disponible" 
+                                                               Foreground="#c7d5e0" 
+                                                               FontSize="13"
+                                                               HorizontalAlignment="Center"
+                                                               Margin="0,0,0,8"/>
+                                                    <TextBlock x:Name="lblSaldoPerfil" 
+                                                               Text="0,00€" 
+                                                               Foreground="#66c0f4" 
+                                                               FontSize="32" 
+                                                               FontWeight="Bold"
+                                                               HorizontalAlignment="Center"/>
+                                                </StackPanel>
+                                            </Border>
+
+                                            <!-- Añadir fondos -->
+                                            <TextBlock Text="AÑADIR FONDOS" 
+                                                       Foreground="White" 
+                                                       FontWeight="Bold" 
+                                                       FontSize="14"
+                                                       Margin="0,0,0,12"/>
+                                            
+                                            <Border Background="#1b2838" 
+                                                    Padding="15" 
+                                                    CornerRadius="5"
+                                                    Margin="0,0,0,15"
+                                                    BorderBrush="#3A4A5A"
+                                                    BorderThickness="1">
+                                                <StackPanel>
+                                                    <TextBlock Text="Cantidad a recargar:" 
+                                                               Foreground="#a3b3c1" 
+                                                               FontSize="12"
+                                                               Margin="0,0,0,8"/>
+                                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,15">
+                                                        <TextBox x:Name="txtCantidadRecarga" 
+                                                                 Width="100" 
+                                                                 Height="38" 
+                                                                 FontSize="16" 
+                                                                 VerticalContentAlignment="Center" 
+                                                                 Background="#232F3E" 
+                                                                 Foreground="White" 
+                                                                 BorderBrush="#3A4A5A"
+                                                                 BorderThickness="1" 
+                                                                 Text="10" 
+                                                                 Padding="10,7"/>
+                                                        <TextBlock Text="€" 
+                                                                   Foreground="White" 
+                                                                   FontSize="18" 
+                                                                   VerticalAlignment="Center" 
+                                                                   Margin="10,0"/>
+                                                    </StackPanel>
+
+                                                    <TextBlock Text="Método de pago:" 
+                                                               Foreground="#a3b3c1" 
+                                                               FontSize="12"
+                                                               Margin="0,0,0,8"/>
+                                                    <ComboBox x:Name="cmbMetodosGuardados" 
+                                                              Height="38" 
+                                                              Background="#232F3E" 
+                                                              Foreground="Black"
+                                                              BorderBrush="#3A4A5A"
+                                                              BorderThickness="1"
+                                                              Padding="10"/>
+                                                </StackPanel>
+                                            </Border>
+                                            
+                                            <Button Content="+ INGRESAR DINERO" 
+                                                    Click="BtnIngresarDinero_Click" 
+                                                    Background="#2a475e" 
+                                                    Foreground="White" 
+                                                    Height="45" 
+                                                    FontSize="14"
+                                                    FontWeight="Bold"
+                                                    BorderThickness="0"
+                                                    Cursor="Hand">
+                                                <Button.Style>
+                                                    <Style TargetType="Button">
+                                                        <Setter Property="Template">
+                                                            <Setter.Value>
+                                                                <ControlTemplate TargetType="Button">
+                                                                    <Border Background="{TemplateBinding Background}" 
+                                                                            CornerRadius="4"
+                                                                            Padding="10">
+                                                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                                    </Border>
+                                                                </ControlTemplate>
+                                                            </Setter.Value>
+                                                        </Setter>
+                                                        <Style.Triggers>
+                                                            <Trigger Property="IsMouseOver" Value="True">
+                                                                <Setter Property="Background" Value="#3d5a6e"/>
+                                                            </Trigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Button.Style>
+                                            </Button>
+                                        </StackPanel>
+                                    </Border>
+
+                                    <!-- Gestión de métodos de pago -->
+                                    <Border Background="#232F3E" 
+                                            CornerRadius="8" 
+                                            Padding="25"
+                                            BorderBrush="#3A4A5A"
+                                            BorderThickness="1">
+                                        <StackPanel>
+                                            <TextBlock Text="💳 MÉTODOS DE PAGO" 
+                                                       Foreground="White" 
+                                                       FontWeight="Bold" 
+                                                       FontSize="18"
+                                                       Margin="0,0,0,20"/>
+
+                                            <!-- Añadir nuevo método -->
+                                            <Border Background="#1b2838" 
+                                                    Padding="15" 
+                                                    CornerRadius="5"
+                                                    Margin="0,0,0,20"
+                                                    BorderBrush="#3A4A5A"
+                                                    BorderThickness="1">
+                                                <StackPanel>
+                                                    <TextBlock Text="Añadir nuevo método" 
+                                                               Foreground="White" 
+                                                               FontWeight="SemiBold"
+                                                               FontSize="13"
+                                                               Margin="0,0,0,15"/>
+                                                
+                                                    <TextBlock Text="Tipo de pago:" 
+                                                               Foreground="#a3b3c1" 
+                                                               FontSize="12"
+                                                               Margin="0,0,0,8"/>
+                                                    <ComboBox x:Name="cmbTipoNuevo" 
+                                                              Height="38" 
+                                                              Margin="0,0,0,15" 
+                                                              Foreground="Black"
+                                                              Background="#232F3E"
+                                                              BorderBrush="#3A4A5A"
+                                                              BorderThickness="1"
+                                                              Padding="10">
+                                                        <ComboBoxItem Content="Tarjeta de Crédito/Débito" IsSelected="True"/>
+                                                        <ComboBoxItem Content="Google Pay"/>
+                                                        <ComboBoxItem Content="Tarjeta Prepago (Game/Steam)"/>
+                                                    </ComboBox>
+
+                                                    <TextBlock Text="Número / ID / Código:" 
+                                                               Foreground="#a3b3c1" 
+                                                               FontSize="12"
+                                                               Margin="0,0,0,8"/>
+                                                    <TextBox x:Name="txtDatoNuevo" 
+                                                             Background="#232F3E" 
+                                                             Foreground="White" 
+                                                             Height="38" 
+                                                             BorderBrush="#3A4A5A"
+                                                             BorderThickness="1" 
+                                                             Margin="0,0,0,15"
+                                                             Padding="10"/>
+
+                                                    <Button Content="➕ AGREGAR MÉTODO" 
+                                                            Click="BtnGuardarMetodo_Click" 
+                                                            Background="#3d4450" 
+                                                            Foreground="White" 
+                                                            Height="40"
+                                                            FontWeight="Bold"
+                                                            FontSize="13"
+                                                            BorderThickness="0"
+                                                            Cursor="Hand">
+                                                        <Button.Style>
+                                                            <Style TargetType="Button">
+                                                                <Setter Property="Template">
+                                                                    <Setter.Value>
+                                                                        <ControlTemplate TargetType="Button">
+                                                                            <Border Background="{TemplateBinding Background}" 
+                                                                                    CornerRadius="4"
+                                                                                    Padding="10">
+                                                                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                                            </Border>
+                                                                        </ControlTemplate>
+                                                                    </Setter.Value>
+                                                                </Setter>
+                                                                <Style.Triggers>
+                                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                                        <Setter Property="Background" Value="#4a5560"/>
+                                                                    </Trigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </Button.Style>
+                                                    </Button>
+                                                </StackPanel>
+                                            </Border>
+
+                                            <!-- Lista de métodos guardados -->
+                                            <TextBlock Text="Métodos guardados" 
+                                                       Foreground="#a3b3c1" 
+                                                       FontSize="13"
+                                                       FontWeight="SemiBold"
+                                                       Margin="0,0,0,10"/>
+                                            
+                                            <Border Background="#1b2838" 
+                                                    CornerRadius="5"
+                                                    BorderBrush="#3A4A5A"
+                                                    BorderThickness="1"
+                                                    MinHeight="120">
+                                                <ScrollViewer VerticalScrollBarVisibility="Auto" MaxHeight="150">
+                                                    <ItemsControl x:Name="listaMetodosVisual">
+                                                        <ItemsControl.ItemTemplate>
+                                                            <DataTemplate>
+                                                                <Border Background="#232F3E" 
+                                                                        Margin="10" 
+                                                                        Padding="12"
+                                                                        CornerRadius="4"
+                                                                        BorderBrush="#3A4A5A"
+                                                                        BorderThickness="1">
+                                                                    <Grid>
+                                                                        <Grid.ColumnDefinitions>
+                                                                            <ColumnDefinition Width="Auto"/>
+                                                                            <ColumnDefinition Width="*"/>
+                                                                        </Grid.ColumnDefinitions>
+                                                                        <TextBlock Text="💳" 
+                                                                                   FontSize="16" 
+                                                                                   Margin="0,0,10,0"
+                                                                                   VerticalAlignment="Center"/>
+                                                                        <TextBlock Text="{Binding}" 
+                                                                                   Grid.Column="1"
+                                                                                   Foreground="White" 
+                                                                                   FontSize="12"
+                                                                                   VerticalAlignment="Center"
+                                                                                   TextWrapping="Wrap"/>
+                                                                    </Grid>
+                                                                </Border>
+                                                            </DataTemplate>
+                                                        </ItemsControl.ItemTemplate>
+                                                    </ItemsControl>
+                                                </ScrollViewer>
+                                            </Border>
+                                        </StackPanel>
+                                    </Border>
+                                </StackPanel>
+                            </Grid>
+                        </Grid>
+                    </ScrollViewer>
                 </Grid>
 
             </Grid>
