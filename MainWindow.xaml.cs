@@ -8,6 +8,9 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using System.Diagnostics;
 using System.ComponentModel;
+using System.Globalization;
+using System.Windows.Data;
+using System.Windows.Media.Imaging;
 
 using Microsoft.EntityFrameworkCore;
 
@@ -22,6 +25,36 @@ using iText.Kernel.Font;
 
 namespace TrabajoInterfacesFinal    
 {
+    public class ImagePathConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value is string imagePath && !string.IsNullOrEmpty(imagePath))
+            {
+                try
+                {
+                    string directorioBase = AppDomain.CurrentDomain.BaseDirectory;
+                    string rutaCompleta = System.IO.Path.Combine(directorioBase, imagePath);
+                    
+                    if (File.Exists(rutaCompleta))
+                    {
+                        return new BitmapImage(new Uri(rutaCompleta, UriKind.Absolute));
+                    }
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Error cargando imagen: {ex.Message}");
+                }
+            }
+            return null;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
     public partial class MainWindow : Window
     {
         // =========================================================
@@ -244,6 +277,7 @@ namespace TrabajoInterfacesFinal
                                 Genero = bibItem.Juego.Genero,
                                 Precio = bibItem.Juego.Precio,
                                 JuegoId = bibItem.Juego.Id,
+                                Imagen = bibItem.Juego.Imagen,
                                 ValoracionPromedio = bibItem.Juego.ValoracionPromedio,
                                 TotalValoraciones = bibItem.Juego.TotalValoraciones,
                                 Valoracion = valoracionUsuario?.Puntuacion ?? 0
@@ -558,7 +592,7 @@ namespace TrabajoInterfacesFinal
                     txtDetalleTitulo.Text = juegoCompleto.Titulo;
                     txtDetallePrecio.Text = juegoCompleto.Precio + "€";
                     txtDetalleDescripcion.Text = juegoCompleto.Descripcion ?? "No hay descripción disponible.";
-                    
+
                     // Cargar imagen
                     if (!string.IsNullOrEmpty(juegoCompleto.Imagen))
                     {
@@ -687,7 +721,7 @@ namespace TrabajoInterfacesFinal
                             var juegoCompleto = db.Juegos
                                 .Include(j => j.Valoraciones)
                                 .FirstOrDefault(j => j.Titulo == item.Titulo);
-                            
+                        
                             if (juegoCompleto != null)
                             {
                                 if (!usuario.BibliotecaJuegos.Any(b => b.JuegoId == juegoCompleto.Id))
@@ -709,6 +743,7 @@ namespace TrabajoInterfacesFinal
                                             Genero = item.Genero,
                                             Precio = item.Precio,
                                             JuegoId = juegoCompleto.Id,
+                                            Imagen = juegoCompleto.Imagen,
                                             ValoracionPromedio = juegoCompleto.ValoracionPromedio,
                                             TotalValoraciones = juegoCompleto.TotalValoraciones
                                         });
@@ -1138,6 +1173,7 @@ namespace TrabajoInterfacesFinal
         public decimal Precio { get; set; }
         public string Genero { get; set; }
         public int JuegoId { get; set; }
+        public string Imagen { get; set; }
 
         private int valoracion = 0;
         public int Valoracion
