@@ -1579,7 +1579,7 @@ namespace TrabajoInterfacesFinal
         #endregion
 
         // =========================================================
-        // 9. FACTURACIÓN PDF (PARA iTEXT 9.5.0)
+        // 9. FACTURACIÓN PDF
         // =========================================================
         #region Factura PDF
 
