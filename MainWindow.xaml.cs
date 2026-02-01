@@ -68,6 +68,7 @@ namespace TrabajoInterfacesFinal
         List<DatosJuego> catalogoCompleto = new List<DatosJuego>();
         DatosJuego juegoActualEnDetalle = new DatosJuego();
         private ObservableCollection<DatosJuego> bibliotecaJuegos = new ObservableCollection<DatosJuego>();
+        private ObservableCollection<DatosJuego> listaDeseosJuegos = new ObservableCollection<DatosJuego>();
         private bool filtroFavoritosActivo = false;
 
 
@@ -166,6 +167,7 @@ namespace TrabajoInterfacesFinal
 
             // Vinculamos la lista visual con nuestros datos
             listaBiblioteca.ItemsSource = bibliotecaJuegos;
+            // listaDeseos.ItemsSource = listaDeseosJuegos; // Se inicializa al navegar a la lista de deseos
         }
 
         // =========================================================
@@ -178,6 +180,10 @@ namespace TrabajoInterfacesFinal
             Grid_Tienda.Visibility = Visibility.Collapsed;
             Grid_Detalle.Visibility = Visibility.Collapsed;
             Grid_Biblioteca.Visibility = Visibility.Collapsed;
+            if (this.FindName("Grid_ListaDeseos") is Grid gridDeseos)
+            {
+                gridDeseos.Visibility = Visibility.Collapsed;
+            }
             Grid_Perfil.Visibility = Visibility.Collapsed;
             Grid_Carrito.Visibility = Visibility.Collapsed;
             Grid_Login.Visibility = Visibility.Collapsed;
@@ -264,6 +270,52 @@ namespace TrabajoInterfacesFinal
             }
             
             AplicarFiltroBiblioteca();
+        }
+
+        private void Nav_ListaDeseos_Click(object sender, RoutedEventArgs e)
+        {
+            OcultarTodas();
+            // Grid_ListaDeseos.Visibility = Visibility.Visible; // Comentado temporalmente
+            if (this.FindName("Grid_ListaDeseos") is Grid gridDeseos)
+            {
+                gridDeseos.Visibility = Visibility.Visible;
+            }
+            CargarListaDeseos();
+        }
+
+        private void CargarListaDeseos()
+        {
+            if (usuarioActual == null) return;
+
+            listaDeseosJuegos.Clear();
+            
+            using (var db = new AppDbContext())
+            {
+                var deseos = db.ListasDeseos
+                    .Where(l => l.UsuarioId == usuarioActual.Id)
+                    .Include(l => l.Juego)
+                        .ThenInclude(j => j.Valoraciones)
+                    .ToList();
+
+                foreach (var deseo in deseos)
+                {
+                    listaDeseosJuegos.Add(new DatosJuego
+                    {
+                        Titulo = deseo.Juego.Titulo,
+                        Genero = deseo.Juego.Genero,
+                        Precio = deseo.Juego.Precio,
+                        JuegoId = deseo.Juego.Id,
+                        Imagen = deseo.Juego.Imagen,
+                        ValoracionPromedio = deseo.Juego.ValoracionPromedio,
+                        TotalValoraciones = deseo.Juego.TotalValoraciones
+                    });
+                }
+            }
+            
+            if (this.FindName("listaDeseos") is ListView lista)
+            {
+                lista.ItemsSource = listaDeseosJuegos;
+            }
         }
 
         private void AplicarFiltroBiblioteca()
@@ -580,6 +632,7 @@ namespace TrabajoInterfacesFinal
                 usuarioActual = null;
                 misMetodosPago.Clear();
                 bibliotecaJuegos.Clear();
+                listaDeseosJuegos.Clear();
                 carrito.Clear();
             };
 
@@ -800,14 +853,12 @@ namespace TrabajoInterfacesFinal
                             {
                                 imgDetalleJuego.Source = null;
                                 borderDetalleImagen.Background = Brushes.DarkRed;
-                                System.Diagnostics.Debug.WriteLine($"Imagen no encontrada en detalle: {rutaCompleta}");
                             }
                         }
-                        catch (Exception ex)
+                        catch
                         {
                             imgDetalleJuego.Source = null;
                             borderDetalleImagen.Background = Brushes.DarkOrange;
-                            System.Diagnostics.Debug.WriteLine($"Error cargando imagen en detalle: {ex.Message}");
                         }
                     }
                     else
@@ -818,6 +869,142 @@ namespace TrabajoInterfacesFinal
                     
                     OcultarTodas();
                     Grid_Detalle.Visibility = Visibility.Visible;
+                }
+            }
+        }
+
+        private void BtnAñadirListaDeseos_Click(object sender, RoutedEventArgs e)
+        {
+            if (usuarioActual == null)
+            {
+                MessageBox.Show("Debes iniciar sesión para añadir a lista de deseos.", "Sesión requerida", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            using (var db = new AppDbContext())
+            {
+                var yaEnBiblioteca = db.BibliotecaUsuarios
+                    .Any(b => b.UsuarioId == usuarioActual.Id && b.JuegoId == juegoActualEnDetalle.JuegoId);
+
+                if (yaEnBiblioteca)
+                {
+                    MessageBox.Show("Ya tienes este juego en tu biblioteca.", "Ya adquirido", MessageBoxButton.OK, MessageBoxImage.Information);
+                    return;
+                }
+
+                var yaEnDeseos = db.ListasDeseos
+                    .Any(l => l.UsuarioId == usuarioActual.Id && l.JuegoId == juegoActualEnDetalle.JuegoId);
+
+                if (yaEnDeseos)
+                {
+                    MessageBox.Show("Este juego ya está en tu lista de deseos.", "Ya añadido", MessageBoxButton.OK, MessageBoxImage.Information);
+                    return;
+                }
+
+                var nuevoDeseo = new ListaDeseos
+                {
+                    UsuarioId = usuarioActual.Id,
+                    JuegoId = juegoActualEnDetalle.JuegoId,
+                    FechaAgregado = DateTime.Now
+                };
+
+                db.ListasDeseos.Add(nuevoDeseo);
+                db.SaveChanges();
+
+                MessageBox.Show($"{juegoActualEnDetalle.Titulo} añadido a tu lista de deseos!", "Añadido", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+        }
+
+        private void BtnVerDesdeDeseos_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button btn && btn.DataContext is DatosJuego datos)
+            {
+                using (var db = new AppDbContext())
+                {
+                    var juegoCompleto = db.Juegos.Include(j => j.Valoraciones).FirstOrDefault(j => j.Id == datos.JuegoId);
+                    if (juegoCompleto != null)
+                    {
+                        juegoActualEnDetalle = new DatosJuego 
+                        { 
+                            Titulo = datos.Titulo,
+                            Precio = datos.Precio,
+                            Genero = datos.Genero,
+                            JuegoId = juegoCompleto.Id,
+                            ValoracionPromedio = juegoCompleto.ValoracionPromedio,
+                            TotalValoraciones = juegoCompleto.TotalValoraciones
+                        };
+                        
+                        if (usuarioActual != null)
+                        {
+                            var valoracionUsuario = juegoCompleto.Valoraciones.FirstOrDefault(v => v.UsuarioId == usuarioActual.Id);
+                            if (valoracionUsuario != null)
+                            {
+                                juegoActualEnDetalle.Valoracion = valoracionUsuario.Puntuacion;
+                            }
+                        }
+                        
+                        panelEstrellasDetalle.DataContext = juegoActualEnDetalle;
+                        
+                        txtDetalleTitulo.Text = juegoCompleto.Titulo;
+                        txtDetallePrecio.Text = juegoCompleto.Precio + "€";
+                        txtDetalleDescripcion.Text = juegoCompleto.Descripcion ?? "No hay descripción disponible.";
+
+                        if (!string.IsNullOrEmpty(juegoCompleto.Imagen))
+                        {
+                            try
+                            {
+                                string directorioBase = AppDomain.CurrentDomain.BaseDirectory;
+                                string rutaCompleta = System.IO.Path.Combine(directorioBase, juegoCompleto.Imagen);
+                                
+                                if (File.Exists(rutaCompleta))
+                                {
+                                    imgDetalleJuego.Source = new System.Windows.Media.Imaging.BitmapImage(new Uri(rutaCompleta, UriKind.Absolute));
+                                    borderDetalleImagen.Background = Brushes.Black;
+                                }
+                                else
+                                {
+                                    imgDetalleJuego.Source = null;
+                                    borderDetalleImagen.Background = Brushes.DarkRed;
+                                }
+                            }
+                            catch
+                            {
+                                imgDetalleJuego.Source = null;
+                                borderDetalleImagen.Background = Brushes.DarkOrange;
+                            }
+                        }
+                        else
+                        {
+                            imgDetalleJuego.Source = null;
+                            borderDetalleImagen.Background = Brushes.Black;
+                        }
+                        
+                        OcultarTodas();
+                        Grid_Detalle.Visibility = Visibility.Visible;
+                    }
+                }
+            }
+        }
+
+        private void BtnEliminarDeseos_Click(object sender, RoutedEventArgs e)
+        {
+            if (usuarioActual == null) return;
+
+            if (sender is Button btn && btn.DataContext is DatosJuego juego)
+            {
+                using (var db = new AppDbContext())
+                {
+                    var deseo = db.ListasDeseos
+                        .FirstOrDefault(l => l.UsuarioId == usuarioActual.Id && l.JuegoId == juego.JuegoId);
+
+                    if (deseo != null)
+                    {
+                        db.ListasDeseos.Remove(deseo);
+                        db.SaveChanges();
+
+                        listaDeseosJuegos.Remove(juego);
+                        MessageBox.Show($"{juego.Titulo} eliminado de tu lista de deseos", "Eliminado", MessageBoxButton.OK, MessageBoxImage.Information);
+                    }
                 }
             }
         }
@@ -961,6 +1148,17 @@ namespace TrabajoInterfacesFinal
                                             VecesJugadas = juegoCompleto.VecesJugadas,
                                             EsFavorito = false
                                         });
+                                    }
+                                    
+                                    var deseo = db.ListasDeseos.FirstOrDefault(l => l.UsuarioId == usuario.Id && l.JuegoId == juegoCompleto.Id);
+                                    if (deseo != null)
+                                    {
+                                        db.ListasDeseos.Remove(deseo);
+                                        var juegoEnDeseos = listaDeseosJuegos.FirstOrDefault(j => j.JuegoId == juegoCompleto.Id);
+                                        if (juegoEnDeseos != null)
+                                        {
+                                            listaDeseosJuegos.Remove(juegoEnDeseos);
+                                        }
                                     }
                                 }
                             }
@@ -1350,7 +1548,7 @@ namespace TrabajoInterfacesFinal
                         if (juegoEnCatalogo != null)
                         {
                             juegoEnCatalogo.ValoracionPromedio = juego.ValoracionPromedio;
-                            juegoEnCatalogo.TotalValoraciones = juegoEnCatalogo.TotalValoraciones;
+                            juegoEnCatalogo.TotalValoraciones = juego.TotalValoraciones;
                         }
 
                         MessageBox.Show($"¡Valoración de {valoracionSeleccionada} estrellas guardada!", "Valoración Registrada", MessageBoxButton.OK, MessageBoxImage.Information);
@@ -1590,6 +1788,17 @@ namespace TrabajoInterfacesFinal
         public Juego Juego { get; set; }
     }
 
+    public class ListaDeseos
+    {
+        public int Id { get; set; }
+        public int UsuarioId { get; set; }
+        public int JuegoId { get; set; }
+        public DateTime FechaAgregado { get; set; }
+        
+        public Usuario Usuario { get; set; }
+        public Juego Juego { get; set; }
+    }
+
     public class MetodoPago
     {
         public int Id { get; set; }
@@ -1618,6 +1827,7 @@ namespace TrabajoInterfacesFinal
         public DbSet<Valoracion> Valoraciones { get; set; }
         public DbSet<BibliotecaUsuario> BibliotecaUsuarios { get; set; }
         public DbSet<JuegoFavorito> JuegosFavoritos { get; set; }
+        public DbSet<ListaDeseos> ListasDeseos { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder options)
         {
@@ -1686,6 +1896,22 @@ namespace TrabajoInterfacesFinal
 
             modelBuilder.Entity<JuegoFavorito>()
                 .HasIndex(f => new { f.UsuarioId, f.JuegoId })
+                .IsUnique();
+
+            modelBuilder.Entity<ListaDeseos>()
+                .HasOne(l => l.Usuario)
+                .WithMany()
+                .HasForeignKey(l => l.UsuarioId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<ListaDeseos>()
+                .HasOne(l => l.Juego)
+                .WithMany()
+                .HasForeignKey(l => l.JuegoId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<ListaDeseos>()
+                .HasIndex(l => new { l.UsuarioId, l.JuegoId })
                 .IsUnique();
         }
     }
