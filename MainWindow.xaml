@@ -198,10 +198,52 @@ Cursor="Hand">
                 <Grid x:Name="Grid_Tienda" Visibility="Visible" Margin="20">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
 
-                    <StackPanel Orientation="Horizontal" Margin="0,0,0,20">
+                    <!-- Botón de Ayuda -->
+                    <Button x:Name="btnAyudaTienda"
+                            Click="BtnAyudaTienda_Click"
+                            HorizontalAlignment="Center"
+                            Margin="0,0,0,15"
+                            Padding="20,12"
+                            Cursor="Hand"
+                            ToolTip="Obtener ayuda sobre la Tienda">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="❓" FontSize="18" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                            <TextBlock Text="AYUDA - ¿Cómo usar la Tienda?" FontSize="14" FontWeight="Bold" VerticalAlignment="Center"/>
+                        </StackPanel>
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Background" Value="#2a475e"/>
+                                <Setter Property="BorderBrush" Value="#66c0f4"/>
+                                <Setter Property="BorderThickness" Value="2"/>
+                                <Setter Property="Foreground" Value="#66c0f4"/>
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border Background="{TemplateBinding Background}" 
+                                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                                    CornerRadius="8"
+                                                    Padding="{TemplateBinding Padding}">
+                                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            </Border>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                                <Style.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Background" Value="#3d5a6e"/>
+                                        <Setter Property="BorderBrush" Value="#90c9f4"/>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,20" Grid.Row="1">
                         <TextBox x:Name="txtBuscador" Width="250" Height="35" Background="#223a50" Foreground="White" BorderThickness="0" VerticalContentAlignment="Center" Padding="10,0" TextChanged="TxtBuscador_TextChanged"/>
                         <TextBlock Text="🔍" VerticalAlignment="Center" Foreground="Gray" Margin="-30,0,20,0" IsHitTestVisible="False"/>
                         <ComboBox x:Name="cmbFiltroGenero" Width="180" Height="35" Background="#223a50" Foreground="Black" VerticalContentAlignment="Center" SelectionChanged="CmbFiltroGenero_SelectionChanged">
@@ -214,7 +256,7 @@ Cursor="Hand">
                         </ComboBox>
                     </StackPanel>
 
-                    <ScrollViewer Grid.Row="1">
+                    <ScrollViewer Grid.Row="2">
                         <WrapPanel x:Name="PanelJuegos" Orientation="Horizontal"/>
                     </ScrollViewer>
                 </Grid>
@@ -673,6 +715,47 @@ Cursor="Hand">
 
                 <Grid x:Name="Grid_Biblioteca" Visibility="Collapsed" Margin="30">
                     <StackPanel>
+                        <!-- Botón de Ayuda -->
+                        <Button x:Name="btnAyudaBiblioteca"
+                                Click="BtnAyudaBiblioteca_Click"
+                                HorizontalAlignment="Center"
+                                Margin="0,0,0,20"
+                                Padding="20,12"
+                                Cursor="Hand"
+                                ToolTip="Obtener ayuda sobre la Biblioteca">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="❓" FontSize="18" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                                <TextBlock Text="AYUDA - ¿Cómo usar la Biblioteca?" FontSize="14" FontWeight="Bold" VerticalAlignment="Center"/>
+                            </StackPanel>
+                            <Button.Style>
+                                <Style TargetType="Button">
+                                    <Setter Property="Background" Value="#2a475e"/>
+                                    <Setter Property="BorderBrush" Value="#66c0f4"/>
+                                    <Setter Property="BorderThickness" Value="2"/>
+                                    <Setter Property="Foreground" Value="#66c0f4"/>
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border Background="{TemplateBinding Background}" 
+                                                        BorderBrush="{TemplateBinding BorderBrush}"
+                                                        BorderThickness="{TemplateBinding BorderThickness}"
+                                                        CornerRadius="8"
+                                                        Padding="{TemplateBinding Padding}">
+                                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                </Border>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                    <Style.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="Background" Value="#3d5a6e"/>
+                                            <Setter Property="BorderBrush" Value="#90c9f4"/>
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,20">
                             <TextBlock Text="MIS JUEGOS" FontSize="28" Foreground="White" VerticalAlignment="Center" Margin="0,0,20,0"/>
                             <Button x:Name="btnFiltroFavoritos"
@@ -719,12 +802,12 @@ Cursor="Hand">
                             </Button>
                         </StackPanel>
                         <ListView x:Name="listaBiblioteca"
-                  Background="#16202D"
-                  BorderThickness="0"
-                  HorizontalAlignment="Stretch"
-                  VerticalAlignment="Stretch"
-                  ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                  ItemsSource="{Binding}">
+                                  Background="#16202D"
+                                  BorderThickness="0"
+                                  HorizontalAlignment="Stretch"
+                                  VerticalAlignment="Stretch"
+                                  ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                                  ItemsSource="{Binding}">
                             <ListView.ItemContainerStyle>
                                 <Style TargetType="ListViewItem">
                                     <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
@@ -742,44 +825,45 @@ Cursor="Hand">
                             <ListView.ItemTemplate>
                                 <DataTemplate>
                                     <Border Background="#232F3E" 
-                            CornerRadius="8" 
-                            Margin="0,0,0,15" 
-                            Padding="15"
-                            BorderBrush="#3A4A5A"
-                            BorderThickness="1">
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="200"/>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-                            
-                            <!-- Imagen del juego -->
-                            <Border Grid.Column="0" 
-                                    Width="180" 
-                                    Height="110" 
-                                    Background="Black" 
-                                    CornerRadius="5" 
-                                    Margin="0,0,20,0">
-                                <Image Source="{Binding Imagen, Converter={StaticResource ImagePathConverter}}" 
-                                       Stretch="UniformToFill"/>
-                            </Border>
-                            
-                            <!-- Información del juego -->
-                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                <TextBlock Text="{Binding Titulo}" 
-                                           Foreground="White" 
-                                           FontWeight="Bold" 
-                                           FontSize="18"/>
-                                <TextBlock Text="{Binding Genero}" 
-                                           Foreground="#7FC7A3" 
-                                           FontSize="13" 
-                                           Margin="0,4,0,0"/>
-                                <TextBlock Text="{Binding Precio, StringFormat={}{0}€}" 
-                                           Foreground="#FFD700" 
-                                           FontSize="15" 
-                                           Margin="0,4,0,0"/>
-                                
+                                            CornerRadius="8" 
+                                            Margin="0,0,0,15" 
+                                            Padding="15"
+                                            BorderBrush="#3A4A5A"
+                                            BorderThickness="1">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="200"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            
+                                            <!-- Imagen del juego -->
+                                            <Border Grid.Column="0" 
+                                                    Width="180" 
+                                                    Height="110" 
+                                                    Background="Black" 
+                                                    CornerRadius="5" 
+                                                    Margin="0,0,20,0">
+                                                <Image Source="{Binding Imagen, Converter={StaticResource ImagePathConverter}}" 
+                                                       Stretch="UniformToFill"/>
+                                            </Border>
+                                            
+                                            <!-- Información del juego -->
+                                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding Titulo}" 
+                                                           Foreground="White" 
+                                                           FontWeight="Bold" 
+                                                           FontSize="18"/>
+                                                <TextBlock Text="{Binding Genero}" 
+                                                           Foreground="#7FC7A3" 
+                                                           FontSize="13" 
+                                                           Margin="0,4,0,0"/>
+                                                <TextBlock Text="{Binding Precio, StringFormat={}{0}€}" 
+                                                           Foreground="#FFD700" 
+                                                           FontSize="16" 
+                                                           FontWeight="Bold"
+                                                           Margin="0,6,0,0"/>
+                                                
                                 <!-- Estrellas de valoración del usuario -->
                                 <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
                                     <TextBlock Text="Tu valoración: " 
@@ -879,9 +963,9 @@ Cursor="Hand">
                                 </StackPanel>
                                 
                                 <!-- Valoración promedio global -->
-                                <TextBlock Text="{Binding ValoracionPromedioTexto}" 
-                                           Foreground="#8A8A8A" 
-                                           FontSize="11" 
+                                                <TextBlock Text="{Binding ValoracionPromedioTexto}" 
+                                                           Foreground="#8A8A8A" 
+                                                           FontSize="11" 
                                            Margin="0,4,0,0"/>
                                 
                                 <!-- Veces jugadas -->
@@ -893,79 +977,127 @@ Cursor="Hand">
                                                Foreground="White" 
                                                FontSize="12"
                                                FontWeight="Bold"/>
-                                </StackPanel>
+                                            </StackPanel>
                             </StackPanel>
-                            
+                                            
                             <!-- Botones de acción -->
-                            <StackPanel Orientation="Horizontal" 
-                                        Grid.Column="2" 
-                                        VerticalAlignment="Center">
-                                <Button Content="⭐"
-                                        Padding="12,8"
-                                        FontSize="30"
-                                        Margin="0,0,10,0"
-                                        Background="Transparent"
-                                        BorderThickness="2"
-                                        Cursor="Hand"
-                                        Click="BtnFavoritoBiblioteca_Click"
-                                        ToolTip="Marcar como favorito">
-                                    <Button.Style>
-                                        <Style TargetType="Button">
-                                            <Setter Property="BorderBrush" Value="#66c0f4"/>
-                                            <Setter Property="Foreground" Value="Gray"/>
-                                            <Setter Property="Template">
-                                                <Setter.Value>
-                                                    <ControlTemplate TargetType="Button">
-                                                        <Border Background="{TemplateBinding Background}" 
-                                                                BorderBrush="{TemplateBinding BorderBrush}"
-                                                                BorderThickness="{TemplateBinding BorderThickness}"
-                                                                CornerRadius="5"
-                                                                Padding="{TemplateBinding Padding}">
-                                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                                        </Border>
-                                                    </ControlTemplate>
-                                                </Setter.Value>
-                                            </Setter>
-                                            <Style.Triggers>
-                                                <DataTrigger Binding="{Binding EsFavorito}" Value="True">
-                                                    <Setter Property="Foreground" Value="Gold"/>
-                                                    <Setter Property="Background" Value="#3d4450"/>
-                                                </DataTrigger>
-                                                <Trigger Property="IsMouseOver" Value="True">
-                                                    <Setter Property="Background" Value="#3d4450"/>
-                                                </Trigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </Button.Style>
-                                </Button>
-                                <Button Content="VALORAR"
-                                        Padding="15,8"
-                                        Margin="0,0,10,0"
-                                        Background="#3d4450"
-                                        Foreground="#66c0f4"
-                                        FontWeight="Bold"
-                                        BorderThickness="0"
-                                        Cursor="Hand"
-                                        Click="BtnValorarBiblioteca_Click"/>
-                                <Button Content="JUGAR"
-                                        Padding="18,8"
-                                        Background="#5c7e10"
-                                        Foreground="#d2efa9"
-                                        FontWeight="Bold"
-                                        BorderThickness="0"
-                                        Cursor="Hand"
-                                        Click="BtnJugarBiblioteca_Click"/>
-                            </StackPanel>
-                        </Grid>
-                    </Border>
-                </DataTemplate>
-            </ListView.ItemTemplate>
-        </ListView>
-    </StackPanel>
-</Grid>
+                                            <StackPanel Orientation="Horizontal" 
+                                                        Grid.Column="2" 
+                                                        VerticalAlignment="Center">
+                                                <Button Content="VER"
+                                                        Padding="20,10"
+                                                        Margin="0,0,10,0"
+                                                        Background="#3d4450"
+                                                        Foreground="#66c0f4"
+                                                        FontWeight="Bold"
+                                                        FontSize="13"
+                                                        BorderThickness="0"
+                                                        Cursor="Hand"
+                                                        Click="BtnVerDesdeBiblioteca_Click">
+                                                    <Button.Style>
+                                                        <Style TargetType="Button">
+                                                            <Setter Property="Template">
+                                                                <Setter.Value>
+                                                                    <ControlTemplate TargetType="Button">
+                                                                        <Border Background="{TemplateBinding Background}" 
+                                                                                CornerRadius="4"
+                                                                                Padding="{TemplateBinding Padding}">
+                                                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                                        </Border>
+                                                                    </ControlTemplate>
+                                                                </Setter.Value>
+                                                            </Setter>
+                                                            <Style.Triggers>
+                                                                <Trigger Property="IsMouseOver" Value="True">
+                                                                    <Setter Property="Background" Value="#4a5560"/>
+                                                                </Trigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </Button.Style>
+                                                </Button>
+                                                <Button Content="🗑 ELIMINAR"
+                                                        Padding="15,10"
+                                                        Background="#c94f4f"
+                                                        Foreground="White"
+                                                        FontWeight="Bold"
+                                                        FontSize="12"
+                                                        BorderThickness="0"
+                                                        Cursor="Hand"
+                                                        Click="BtnEliminarBiblioteca_Click">
+                                                    <Button.Style>
+                                                        <Style TargetType="Button">
+                                                            <Setter Property="Template">
+                                                                <Setter.Value>
+                                                                    <ControlTemplate TargetType="Button">
+                                                                        <Border Background="{TemplateBinding Background}" 
+                                                                                CornerRadius="4"
+                                                                                Padding="{TemplateBinding Padding}">
+                                                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                                        </Border>
+                                                                    </ControlTemplate>
+                                                                </Setter.Value>
+                                                            </Setter>
+                                                            <Style.Triggers>
+                                                                <Trigger Property="IsMouseOver" Value="True">
+                                                                    <Setter Property="Background" Value="#d63939"/>
+                                                                </Trigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </Button.Style>
+                                                </Button>
+                                            </StackPanel>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ListView.ItemTemplate>
+                        </ListView>
+                    </StackPanel>
+                </Grid>
+
 
                 <Grid x:Name="Grid_ListaDeseos" Visibility="Collapsed" Margin="30">
                     <StackPanel>
+                        <!-- Botón de Ayuda -->
+                        <Button x:Name="btnAyudaListaDeseos"
+                                Click="BtnAyudaListaDeseos_Click"
+                                HorizontalAlignment="Center"
+                                Margin="0,0,0,20"
+                                Padding="20,12"
+                                Cursor="Hand"
+                                ToolTip="Obtener ayuda sobre la Lista de Deseos">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="❓" FontSize="18" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                                <TextBlock Text="AYUDA - ¿Cómo usar la Lista de Deseos?" FontSize="14" FontWeight="Bold" VerticalAlignment="Center"/>
+                            </StackPanel>
+                            <Button.Style>
+                                <Style TargetType="Button">
+                                    <Setter Property="Background" Value="#2a475e"/>
+                                    <Setter Property="BorderBrush" Value="#66c0f4"/>
+                                    <Setter Property="BorderThickness" Value="2"/>
+                                    <Setter Property="Foreground" Value="#66c0f4"/>
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border Background="{TemplateBinding Background}" 
+                                                        BorderBrush="{TemplateBinding BorderBrush}"
+                                                        BorderThickness="{TemplateBinding BorderThickness}"
+                                                        CornerRadius="8"
+                                                        Padding="{TemplateBinding Padding}">
+                                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                </Border>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                    <Style.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="Background" Value="#3d5a6e"/>
+                                            <Setter Property="BorderBrush" Value="#90c9f4"/>
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+
                         <TextBlock Text="LISTA DE DESEOS" FontSize="28" Foreground="White" FontWeight="Bold" Margin="0,0,0,5"/>
                         <TextBlock Text="Juegos que quieres comprar más adelante" FontSize="14" Foreground="#8A8A8A" Margin="0,0,0,25"/>
                         
@@ -1492,16 +1624,16 @@ Cursor="Hand">
                                                                             <ColumnDefinition Width="Auto"/>
                                                                             <ColumnDefinition Width="*"/>
                                                                         </Grid.ColumnDefinitions>
-                                                                        <TextBlock Text="💳" 
-                                                                                   FontSize="16" 
-                                                                                   Margin="0,0,10,0"
-                                                                                   VerticalAlignment="Center"/>
-                                                                        <TextBlock Text="{Binding}" 
-                                                                                   Grid.Column="1"
-                                                                                   Foreground="White" 
-                                                                                   FontSize="12"
-                                                                                   VerticalAlignment="Center"
-                                                                                   TextWrapping="Wrap"/>
+                                                                            <TextBlock Text="💳" 
+                                                                                       FontSize="16" 
+                                                                                       Margin="0,0,10,0"
+                                                                                       VerticalAlignment="Center"/>
+                                                                            <TextBlock Text="{Binding}" 
+                                                                                       Grid.Column="1"
+                                                                                       Foreground="White" 
+                                                                                       FontSize="12"
+                                                                                       VerticalAlignment="Center"
+                                                                                       TextWrapping="Wrap"/>
                                                                     </Grid>
                                                                 </Border>
                                                             </DataTemplate>

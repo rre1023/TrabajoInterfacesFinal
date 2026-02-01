@@ -1009,6 +1009,110 @@ namespace TrabajoInterfacesFinal
             }
         }
 
+        private void BtnVerDesdeBiblioteca_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button btn && btn.DataContext is DatosJuego datos)
+            {
+                using (var db = new AppDbContext())
+                {
+                    var juegoCompleto = db.Juegos.Include(j => j.Valoraciones).FirstOrDefault(j => j.Id == datos.JuegoId);
+                    if (juegoCompleto != null)
+                    {
+                        juegoActualEnDetalle = new DatosJuego 
+                        { 
+                            Titulo = datos.Titulo,
+                            Precio = datos.Precio,
+                            Genero = datos.Genero,
+                            JuegoId = juegoCompleto.Id,
+                            ValoracionPromedio = juegoCompleto.ValoracionPromedio,
+                            TotalValoraciones = juegoCompleto.TotalValoraciones
+                        };
+                        
+                        if (usuarioActual != null)
+                        {
+                            var valoracionUsuario = juegoCompleto.Valoraciones.FirstOrDefault(v => v.UsuarioId == usuarioActual.Id);
+                            if (valoracionUsuario != null)
+                            {
+                                juegoActualEnDetalle.Valoracion = valoracionUsuario.Puntuacion;
+                            }
+                        }
+                        
+                        panelEstrellasDetalle.DataContext = juegoActualEnDetalle;
+                        
+                        txtDetalleTitulo.Text = juegoCompleto.Titulo;
+                        txtDetallePrecio.Text = juegoCompleto.Precio + "€";
+                        txtDetalleDescripcion.Text = juegoCompleto.Descripcion ?? "No hay descripción disponible.";
+
+                        if (!string.IsNullOrEmpty(juegoCompleto.Imagen))
+                        {
+                            try
+                            {
+                                string directorioBase = AppDomain.CurrentDomain.BaseDirectory;
+                                string rutaCompleta = System.IO.Path.Combine(directorioBase, juegoCompleto.Imagen);
+                                
+                                if (File.Exists(rutaCompleta))
+                                {
+                                    imgDetalleJuego.Source = new System.Windows.Media.Imaging.BitmapImage(new Uri(rutaCompleta, UriKind.Absolute));
+                                    borderDetalleImagen.Background = Brushes.Black;
+                                }
+                                else
+                                {
+                                    imgDetalleJuego.Source = null;
+                                    borderDetalleImagen.Background = Brushes.DarkRed;
+                                }
+                            }
+                            catch
+                            {
+                                imgDetalleJuego.Source = null;
+                                borderDetalleImagen.Background = Brushes.DarkOrange;
+                            }
+                        }
+                        else
+                        {
+                            imgDetalleJuego.Source = null;
+                            borderDetalleImagen.Background = Brushes.Black;
+                        }
+                        
+                        OcultarTodas();
+                        Grid_Detalle.Visibility = Visibility.Visible;
+                    }
+                }
+            }
+        }
+
+        private void BtnEliminarBiblioteca_Click(object sender, RoutedEventArgs e)
+        {
+            if (usuarioActual == null) return;
+
+            if (sender is Button btn && btn.DataContext is DatosJuego juego)
+            {
+                var resultado = MessageBox.Show(
+                    $"¿Estás seguro de que deseas eliminar '{juego.Titulo}' de tu biblioteca?\n\nEsta acción no se puede deshacer y perderás acceso al juego.",
+                    "Confirmar eliminación",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Warning
+                );
+
+                if (resultado == MessageBoxResult.Yes)
+                {
+                    using (var db = new AppDbContext())
+                    {
+                        var bibliotecaItem = db.BibliotecaUsuarios
+                            .FirstOrDefault(b => b.UsuarioId == usuarioActual.Id && b.JuegoId == juego.JuegoId);
+
+                        if (bibliotecaItem != null)
+                        {
+                            db.BibliotecaUsuarios.Remove(bibliotecaItem);
+                            db.SaveChanges();
+
+                            bibliotecaJuegos.Remove(juego);
+                            MessageBox.Show($"{juego.Titulo} eliminado de tu biblioteca", "Eliminado", MessageBoxButton.OK, MessageBoxImage.Information);
+                        }
+                    }
+                }
+            }
+        }
+
         #endregion
 
         // =========================================================
@@ -1372,8 +1476,237 @@ namespace TrabajoInterfacesFinal
         #endregion
 
         // =========================================================
-        // 10. EVENTO JUGAR Y VALORACIONES
+        // 10. VENTANAS DE AYUDA
         // =========================================================
+        #region Ayuda
+
+        private void BtnAyudaTienda_Click(object sender, RoutedEventArgs e)
+        {
+            MostrarVentanaAyuda(
+                "Guía de la Tienda",
+                new List<(string icono, string titulo, string descripcion)>
+                {
+                    ("🔍", "Buscar Juegos", "Utiliza la barra de búsqueda para encontrar juegos por nombre. El sistema filtra automáticamente mientras escribes."),
+                    ("🎮", "Filtrar por Género", "Usa el selector de géneros para filtrar los juegos por categorías: Acción, RPG, Aventura, Deportes y Estrategia."),
+                    ("👁️", "Ver Detalles", "Haz clic en el botón 'Ver' de cualquier juego para acceder a información detallada, incluyendo descripción completa e imágenes."),
+                    ("⭐", "Valoraciones", "Cada juego muestra su valoración promedio basada en las opiniones de otros usuarios. Esto te ayuda a tomar decisiones informadas."),
+                    ("🛒", "Añadir al Carrito", "En la página de detalles, puedes añadir el juego al carrito para comprarlo más tarde. También puedes añadirlo directamente a tu lista de deseos."),
+                    ("💡", "Consejo Útil", "Los juegos que ya están en tu biblioteca o en el carrito no se pueden volver a añadir para evitar compras duplicadas.")
+                }
+            );
+        }
+
+        private void BtnAyudaBiblioteca_Click(object sender, RoutedEventArgs e)
+        {
+            MostrarVentanaAyuda(
+                "Guía de la Biblioteca",
+                new List<(string icono, string titulo, string descripcion)>
+                {
+                    ("📚", "Tu Colección", "Aquí se muestran todos los juegos que has comprado. Cada juego incluye información sobre el precio pagado, género y valoraciones."),
+                    ("🎯", "Jugar", "Haz clic en el botón 'JUGAR' para iniciar cualquier juego de tu biblioteca. El sistema registrará cuántas veces has jugado cada título."),
+                    ("⭐", "Marcar Favoritos", "Usa el botón de estrella para marcar tus juegos favoritos. Esto te permite organizarlos mejor y acceder rápidamente a ellos."),
+                    ("🔍", "Filtrar Favoritos", "Utiliza el botón 'FAVORITOS' en la parte superior para mostrar únicamente los juegos que has marcado como favoritos."),
+                    ("📊", "Valorar Juegos", "Haz clic en 'VALORAR' para dar tu opinión sobre un juego (1-5 estrellas). Tu valoración ayuda a otros usuarios y contribuye a la valoración global del juego."),
+                    ("📈", "Estadísticas", "El sistema muestra cuántas veces has jugado cada juego y tu valoración personal. Esta información te ayuda a seguir tu actividad gaming.")
+                }
+            );
+        }
+
+        private void BtnAyudaListaDeseos_Click(object sender, RoutedEventArgs e)
+        {
+            MostrarVentanaAyuda(
+                "Guía de Lista de Deseos",
+                new List<(string icono, string titulo, string descripcion)>
+                {
+                    ("💙", "¿Qué es la Lista de Deseos?", "Es una lista personalizada donde guardas juegos que te interesan pero aún no quieres comprar. Ideal para hacer seguimiento de ofertas futuras."),
+                    ("➕", "Añadir Juegos", "Desde la página de detalles de cualquier juego en la tienda, haz clic en 'AÑADIR A LISTA DE DESEOS'. El juego se guardará automáticamente aquí."),
+                    ("👁️", "Ver Detalles", "Haz clic en 'VER' para acceder a la información completa del juego, incluyendo descripción, valoraciones y precio actual."),
+                    ("🗑️", "Eliminar de la Lista", "Si ya no te interesa un juego, usa el botón 'ELIMINAR' para quitarlo de tu lista de deseos. Esta acción es reversible: puedes añadirlo nuevamente cuando quieras."),
+                    ("🛒", "Comprar Después", "Cuando decidas comprar un juego de tu lista de deseos, simplemente ve a sus detalles y añádelo al carrito. Se eliminará automáticamente de la lista al completar la compra."),
+                    ("📋", "Organización", "La lista de deseos te ayuda a organizar tus compras futuras y no olvidar los juegos que te interesan. ¡Mantenla actualizada!")
+                }
+            );
+        }
+
+        private void MostrarVentanaAyuda(string titulo, List<(string icono, string titulo, string descripcion)> contenidos)
+        {
+            var dialog = new Window
+            {
+                Title = titulo,
+                Width = 700,
+                Height = 600,
+                WindowStartupLocation = WindowStartupLocation.CenterScreen,
+                Background = new SolidColorBrush(Color.FromRgb(27, 40, 56)),
+                ResizeMode = ResizeMode.NoResize,
+                WindowStyle = WindowStyle.None,
+                AllowsTransparency = true
+            };
+
+            var mainBorder = new Border
+            {
+                Background = new SolidColorBrush(Color.FromRgb(35, 47, 62)),
+                CornerRadius = new CornerRadius(12),
+                BorderBrush = new SolidColorBrush(Color.FromRgb(102, 192, 244)),
+                BorderThickness = new Thickness(2)
+            };
+
+            var mainStack = new StackPanel { Margin = new Thickness(0) };
+
+            // Encabezado
+            var headerBorder = new Border
+            {
+                Background = new SolidColorBrush(Color.FromRgb(42, 71, 94)),
+                Padding = new Thickness(30, 20, 30, 20),
+                CornerRadius = new CornerRadius(10, 10, 0, 0)
+            };
+
+            var headerStack = new StackPanel { Orientation = Orientation.Horizontal };
+
+            var iconoTitulo = new TextBlock
+            {
+                Text = "📖",
+                FontSize = 32,
+                Margin = new Thickness(0, 0, 15, 0),
+                VerticalAlignment = System.Windows.VerticalAlignment.Center
+            };
+
+            var txtTitulo = new TextBlock
+            {
+                Text = titulo,
+                Foreground = Brushes.White,
+                FontSize = 26,
+                FontWeight = System.Windows.FontWeights.Bold,
+                VerticalAlignment = System.Windows.VerticalAlignment.Center
+            };
+
+            headerStack.Children.Add(iconoTitulo);
+            headerStack.Children.Add(txtTitulo);
+            headerBorder.Child = headerStack;
+
+            // Contenido scrollable
+            var scrollViewer = new ScrollViewer
+            {
+                VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
+                MaxHeight = 420,
+                Margin = new Thickness(30, 20, 30, 20)
+            };
+
+            var contentStack = new StackPanel();
+
+            foreach (var (icono, tituloItem, descripcion) in contenidos)
+            {
+                var itemBorder = new Border
+                {
+                    Background = new SolidColorBrush(Color.FromRgb(27, 40, 56)),
+                    CornerRadius = new CornerRadius(8),
+                    Padding = new Thickness(20),
+                    Margin = new Thickness(0, 0, 0, 15),
+                    BorderBrush = new SolidColorBrush(Color.FromRgb(61, 68, 80)),
+                    BorderThickness = new Thickness(1)
+                };
+
+                var itemStack = new StackPanel();
+
+                var tituloStack = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 0, 0, 10) };
+
+                var iconoItem = new TextBlock
+                {
+                    Text = icono,
+                    FontSize = 22,
+                    Margin = new Thickness(0, 0, 12, 0),
+                    VerticalAlignment = System.Windows.VerticalAlignment.Center
+                };
+
+                var txtTituloItem = new TextBlock
+                {
+                    Text = tituloItem,
+                    Foreground = new SolidColorBrush(Color.FromRgb(102, 192, 244)),
+                    FontSize = 16,
+                    FontWeight = System.Windows.FontWeights.Bold,
+                    VerticalAlignment = System.Windows.VerticalAlignment.Center
+                };
+
+                tituloStack.Children.Add(iconoItem);
+                tituloStack.Children.Add(txtTituloItem);
+
+                var txtDescripcion = new TextBlock
+                {
+                    Text = descripcion,
+                    Foreground = new SolidColorBrush(Color.FromRgb(163, 179, 193)),
+                    FontSize = 13,
+                    TextWrapping = TextWrapping.Wrap,
+                    LineHeight = 20
+                };
+
+                itemStack.Children.Add(tituloStack);
+                itemStack.Children.Add(txtDescripcion);
+                itemBorder.Child = itemStack;
+
+                contentStack.Children.Add(itemBorder);
+            }
+
+            scrollViewer.Content = contentStack;
+
+            // Pie con botón cerrar
+            var footerBorder = new Border
+            {
+                Background = new SolidColorBrush(Color.FromRgb(27, 40, 56)),
+                Padding = new Thickness(30, 15, 30, 20)
+            };
+
+            var btnCerrar = new Button
+            {
+                Content = "ENTENDIDO",
+                Width = 200,
+                Height = 45,
+                Foreground = Brushes.White,
+                FontSize = 14,
+                FontWeight = System.Windows.FontWeights.Bold,
+                Cursor = System.Windows.Input.Cursors.Hand
+            };
+
+            var cerrarStyle = new System.Windows.Style(typeof(Button));
+            cerrarStyle.Setters.Add(new Setter(Button.BackgroundProperty, new SolidColorBrush(Color.FromRgb(92, 126, 22))));
+            cerrarStyle.Setters.Add(new Setter(Button.BorderThicknessProperty, new Thickness(0)));
+
+            var cerrarTemplate = new ControlTemplate(typeof(Button));
+            var cerrarFactory = new FrameworkElementFactory(typeof(Border));
+            cerrarFactory.SetValue(Border.BackgroundProperty, new TemplateBindingExtension(Button.BackgroundProperty));
+            cerrarFactory.SetValue(Border.CornerRadiusProperty, new CornerRadius(6));
+            cerrarFactory.SetValue(Border.PaddingProperty, new Thickness(10));
+            var cerrarContent = new FrameworkElementFactory(typeof(ContentPresenter));
+            cerrarContent.SetValue(ContentPresenter.HorizontalAlignmentProperty, System.Windows.HorizontalAlignment.Center);
+            cerrarContent.SetValue(ContentPresenter.VerticalAlignmentProperty, System.Windows.VerticalAlignment.Center);
+            cerrarFactory.AppendChild(cerrarContent);
+            cerrarTemplate.VisualTree = cerrarFactory;
+            cerrarStyle.Setters.Add(new Setter(Button.TemplateProperty, cerrarTemplate));
+
+            var cerrarTrigger = new Trigger { Property = Button.IsMouseOverProperty, Value = true };
+            cerrarTrigger.Setters.Add(new Setter(Button.BackgroundProperty, new SolidColorBrush(Color.FromRgb(118, 161, 19))));
+            cerrarStyle.Triggers.Add(cerrarTrigger);
+
+            btnCerrar.Style = cerrarStyle;
+            btnCerrar.Click += (s, ev) => dialog.Close();
+
+            footerBorder.Child = btnCerrar;
+
+            mainStack.Children.Add(headerBorder);
+            mainStack.Children.Add(scrollViewer);
+            mainStack.Children.Add(footerBorder);
+
+            mainBorder.Child = mainStack;
+            dialog.Content = mainBorder;
+
+            dialog.ShowDialog();
+        }
+
+        #endregion
+
+        // =========================================================
+        // 11. EVENTO JUGAR Y VALORACIONES
+        // =========================================================
+        #region Eventos Jugar y Valoraciones
+        
         private void BtnJugarBiblioteca_Click(object sender, RoutedEventArgs e)
         {
             if (sender is Button btn && btn.DataContext is DatosJuego juego)
@@ -1544,6 +1877,13 @@ namespace TrabajoInterfacesFinal
                         juego.ValoracionPromedio = juegoDb.ValoracionPromedio;
                         juego.TotalValoraciones = juegoDb.TotalValoraciones;
 
+                        var juegoEnBiblioteca = bibliotecaJuegos.FirstOrDefault(j => j.JuegoId == juego.JuegoId);
+                        if (juegoEnBiblioteca != null)
+                        {
+                            juegoEnBiblioteca.ValoracionPromedio = juego.ValoracionPromedio;
+                            juegoEnBiblioteca.TotalValoraciones = juego.TotalValoraciones;
+                        }
+
                         var juegoEnCatalogo = catalogoCompleto.FirstOrDefault(j => j.Titulo == juego.Titulo);
                         if (juegoEnCatalogo != null)
                         {
@@ -1623,6 +1963,8 @@ namespace TrabajoInterfacesFinal
                 }
             }
         }
+        
+        #endregion
     }
 
     // CLASES AUXILIARES
