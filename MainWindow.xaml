@@ -1662,8 +1662,17 @@ Cursor="Hand">
                                                              Height="38" 
                                                              BorderBrush="#3A4A5A"
                                                              BorderThickness="1" 
-                                                             Margin="0,0,0,15"
-                                                             Padding="10"/>
+                                                             Margin="0,0,0,5"
+                                                             Padding="10"
+                                                             MaxLength="16"/>
+                                                    
+                                                    <!-- Mensaje de error de validación -->
+                                                    <TextBlock x:Name="txtErrorMetodoPago"
+                                                               Text="Debe introducir exactamente 16 dígitos numéricos"
+                                                               Foreground="#ff6347"
+                                                               FontSize="11"
+                                                               Margin="0,0,0,10"
+                                                               Visibility="Collapsed"/>
 
                                                     <Button Content="➕ AGREGAR MÉTODO" 
                                                             Click="BtnGuardarMetodo_Click" 

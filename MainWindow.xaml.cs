@@ -14,7 +14,6 @@ using System.Windows.Media.Imaging;
 
 using Microsoft.EntityFrameworkCore;
 
-// LIBRERÍAS PARA ITEXT 9 (La versión que tienes instalada)
 using iText.Kernel.Pdf;
 using iText.Layout;
 using iText.Layout.Element;
@@ -165,9 +164,7 @@ namespace TrabajoInterfacesFinal
             CargarJuegosEnTienda();
             ActualizarSaldoVisual();
 
-            // Vinculamos la lista visual con nuestros datos
             listaBiblioteca.ItemsSource = bibliotecaJuegos;
-            // listaDeseos.ItemsSource = listaDeseosJuegos; // Se inicializa al navegar a la lista de deseos
         }
 
         // =========================================================
@@ -836,7 +833,6 @@ namespace TrabajoInterfacesFinal
                     txtDetallePrecio.Text = juegoCompleto.Precio + "€";
                     txtDetalleDescripcion.Text = juegoCompleto.Descripcion ?? "No hay descripción disponible.";
 
-                    // Cargar imagen
                     if (!string.IsNullOrEmpty(juegoCompleto.Imagen))
                     {
                         try
@@ -1078,7 +1074,6 @@ namespace TrabajoInterfacesFinal
                 txtSaldoCarrito.Text = usuarioActual.Saldo.ToString("0.00") + "€";
             }
             
-            // Mostrar mensaje de carrito vacío si no hay items
             if (this.FindName("mensajeCarritoVacio") is StackPanel panelVacio)
             {
                 panelVacio.Visibility = carrito.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
@@ -1102,7 +1097,6 @@ namespace TrabajoInterfacesFinal
             decimal total = 0;
             foreach (var item in carrito) total += item.Precio;
 
-            // Ventana de confirmación
             var dialog = new Window
             {
                 Title = "Confirmar Compra",
@@ -1153,7 +1147,6 @@ namespace TrabajoInterfacesFinal
                 HorizontalAlignment = System.Windows.HorizontalAlignment.Center
             };
 
-            // Detalles de la compra
             var detallesBorder = new Border
             {
                 Background = new SolidColorBrush(Color.FromRgb(27, 40, 56)),
@@ -1247,7 +1240,6 @@ namespace TrabajoInterfacesFinal
                 Margin = new Thickness(0, 10, 0, 0)
             };
 
-            // Botón CANCELAR (más llamativo - verde)
             var cancelarStyle = new System.Windows.Style(typeof(Button));
             cancelarStyle.Setters.Add(new Setter(Button.BackgroundProperty, new SolidColorBrush(Color.FromRgb(92, 126, 22))));
             cancelarStyle.Setters.Add(new Setter(Button.BorderThicknessProperty, new Thickness(0)));
@@ -1281,7 +1273,6 @@ namespace TrabajoInterfacesFinal
                 Style = cancelarStyle
             };
 
-            // Botón CONFIRMAR (menos llamativo - gris)
             var confirmarStyle = new System.Windows.Style(typeof(Button));
             confirmarStyle.Setters.Add(new Setter(Button.BackgroundProperty, new SolidColorBrush(Color.FromRgb(61, 68, 80))));
             confirmarStyle.Setters.Add(new Setter(Button.BorderThicknessProperty, new Thickness(0)));
@@ -1431,10 +1422,37 @@ namespace TrabajoInterfacesFinal
 
         private void BtnGuardarMetodo_Click(object sender, RoutedEventArgs e)
         {
-            if (txtDatoNuevo.Text.Length < 4) 
-            { 
-                MessageBox.Show("Introduce un ID válido."); 
-                return; 
+            // Limpiar estilos de error previos
+            txtDatoNuevo.BorderBrush = new SolidColorBrush(Color.FromRgb(58, 74, 90));
+            if (this.FindName("txtErrorMetodoPago") is TextBlock txtError)
+            {
+                txtError.Visibility = Visibility.Collapsed;
+            }
+
+            string dato = txtDatoNuevo.Text.Trim();
+
+            // Validar que tenga exactamente 16 dígitos
+            if (dato.Length != 16)
+            {
+                txtDatoNuevo.BorderBrush = Brushes.Red;
+                if (this.FindName("txtErrorMetodoPago") is TextBlock txtErr)
+                {
+                    txtErr.Text = "Debe introducir exactamente 16 dígitos numéricos";
+                    txtErr.Visibility = Visibility.Visible;
+                }
+                return;
+            }
+
+            // Validar que todos sean dígitos numéricos
+            if (!dato.All(char.IsDigit))
+            {
+                txtDatoNuevo.BorderBrush = Brushes.Red;
+                if (this.FindName("txtErrorMetodoPago") is TextBlock txtErr)
+                {
+                    txtErr.Text = "Debe introducir solo dígitos numéricos (0-9)";
+                    txtErr.Visibility = Visibility.Visible;
+                }
+                return;
             }
 
             using (var db = new AppDbContext())
@@ -1443,7 +1461,7 @@ namespace TrabajoInterfacesFinal
                 {
                     UsuarioId = usuarioActual.Id,
                     Tipo = cmbTipoNuevo.Text,
-                    Nombre = txtDatoNuevo.Text
+                    Nombre = dato
                 };
 
                 db.MetodosPago.Add(nuevoMetodo);
@@ -1453,7 +1471,7 @@ namespace TrabajoInterfacesFinal
                 usuarioActual.MetodosPago.Add(nuevoMetodo);
             }
 
-            MessageBox.Show("Método añadido.");
+            MessageBox.Show("Método añadido correctamente.", "Éxito", MessageBoxButton.OK, MessageBoxImage.Information);
             txtDatoNuevo.Text = "";
             ActualizarCombosMetodos();
         }
@@ -1515,12 +1533,10 @@ namespace TrabajoInterfacesFinal
         {
             try
             {
-                // Guardar en el Escritorio para evitar problemas de permisos
                 string rutaEscritorio = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
                 string nombreArchivo = $"Factura_Enova_{Guid.NewGuid().ToString().Substring(0, 5)}.pdf";
                 string rutaCompleta = System.IO.Path.Combine(rutaEscritorio, nombreArchivo);
 
-                // CREAR FUENTES (iText 9)
                 PdfFont fontBold = PdfFontFactory.CreateFont(StandardFonts.HELVETICA_BOLD);
                 PdfFont fontNormal = PdfFontFactory.CreateFont(StandardFonts.HELVETICA);
                 PdfFont fontItalic = PdfFontFactory.CreateFont(StandardFonts.HELVETICA_OBLIQUE);
@@ -1531,8 +1547,6 @@ namespace TrabajoInterfacesFinal
                     {
                         using (Document document = new Document(pdf))
                         {
-                            // CABECERA
-                            // Usamos iText.Layout.Element.Paragraph para no chocar con WPF
                             document.Add(new iText.Layout.Element.Paragraph("ENEVO - FACTURA")
                                 .SetFont(fontBold)
                                 .SetTextAlignment(iText.Layout.Properties.TextAlignment.CENTER)
@@ -1549,15 +1563,12 @@ namespace TrabajoInterfacesFinal
 
                             document.Add(new iText.Layout.Element.Paragraph("\n"));
 
-                            // TABLA
                             iText.Layout.Element.Table table = new iText.Layout.Element.Table(UnitValue.CreatePercentArray(new float[] { 3, 1 }));
                             table.SetWidth(UnitValue.CreatePercentValue(100));
 
-                            // Encabezados
                             table.AddHeaderCell(new iText.Layout.Element.Cell().Add(new iText.Layout.Element.Paragraph("PRODUCTO").SetFont(fontBold)));
                             table.AddHeaderCell(new iText.Layout.Element.Cell().Add(new iText.Layout.Element.Paragraph("PRECIO").SetFont(fontBold)));
 
-                            // Filas
                             foreach (var juego in juegosComprados)
                             {
                                 table.AddCell(new iText.Layout.Element.Paragraph(juego.Titulo).SetFont(fontNormal));
@@ -1566,7 +1577,6 @@ namespace TrabajoInterfacesFinal
 
                             document.Add(table);
 
-                            // TOTALES
                             document.Add(new iText.Layout.Element.Paragraph("\n"));
                             decimal baseImponible = totalPagado / 1.21m;
                             decimal iva = totalPagado - baseImponible;
@@ -1591,7 +1601,6 @@ namespace TrabajoInterfacesFinal
                     }
                 }
 
-                // ABRIR EL PDF AUTOMÁTICAMENTE
                 var p = new System.Diagnostics.Process();
                 p.StartInfo = new System.Diagnostics.ProcessStartInfo(rutaCompleta) { UseShellExecute = true };
                 p.Start();
@@ -2209,7 +2218,6 @@ namespace TrabajoInterfacesFinal
         #endregion
     }
 
-    // CLASES AUXILIARES
     public class DatosJuego : INotifyPropertyChanged
     {
         public string Titulo { get; set; }
