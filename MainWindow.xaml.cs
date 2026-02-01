@@ -1102,85 +1102,318 @@ namespace TrabajoInterfacesFinal
             decimal total = 0;
             foreach (var item in carrito) total += item.Precio;
 
-            if (usuarioActual.Saldo >= total)
+            // Ventana de confirmación
+            var dialog = new Window
             {
-                using (var db = new AppDbContext())
+                Title = "Confirmar Compra",
+                Width = 500,
+                Height = 450,
+                WindowStartupLocation = WindowStartupLocation.CenterScreen,
+                Background = new SolidColorBrush(Color.FromRgb(27, 40, 56)),
+                ResizeMode = ResizeMode.NoResize,
+                WindowStyle = WindowStyle.None,
+                AllowsTransparency = true
+            };
+
+            var mainBorder = new Border
+            {
+                Background = new SolidColorBrush(Color.FromRgb(35, 47, 62)),
+                CornerRadius = new CornerRadius(10),
+                BorderBrush = new SolidColorBrush(Color.FromRgb(102, 192, 244)),
+                BorderThickness = new Thickness(2)
+            };
+
+            var stackPanel = new StackPanel { Margin = new Thickness(30) };
+
+            var iconoTexto = new TextBlock
+            {
+                Text = "🛒",
+                FontSize = 48,
+                HorizontalAlignment = System.Windows.HorizontalAlignment.Center,
+                Margin = new Thickness(0, 10, 0, 20)
+            };
+
+            var txtTitulo = new TextBlock
+            {
+                Text = "¿Confirmar Compra?",
+                Foreground = Brushes.White,
+                FontSize = 24,
+                FontWeight = System.Windows.FontWeights.Bold,
+                Margin = new Thickness(0, 0, 0, 15),
+                HorizontalAlignment = System.Windows.HorizontalAlignment.Center
+            };
+
+            var txtMensaje = new TextBlock
+            {
+                Text = $"Estás a punto de comprar {carrito.Count} {(carrito.Count == 1 ? "juego" : "juegos")}",
+                Foreground = new SolidColorBrush(Color.FromRgb(163, 179, 193)),
+                FontSize = 14,
+                TextAlignment = System.Windows.TextAlignment.Center,
+                Margin = new Thickness(0, 0, 0, 15),
+                HorizontalAlignment = System.Windows.HorizontalAlignment.Center
+            };
+
+            // Detalles de la compra
+            var detallesBorder = new Border
+            {
+                Background = new SolidColorBrush(Color.FromRgb(27, 40, 56)),
+                CornerRadius = new CornerRadius(8),
+                Padding = new Thickness(20),
+                Margin = new Thickness(0, 0, 0, 20)
+            };
+
+            var detallesStack = new StackPanel();
+
+            var totalStack = new StackPanel 
+            { 
+                Orientation = Orientation.Horizontal, 
+                HorizontalAlignment = System.Windows.HorizontalAlignment.Center,
+                Margin = new Thickness(0, 0, 0, 10)
+            };
+
+            var txtTotalLabel = new TextBlock
+            {
+                Text = "Total a pagar: ",
+                Foreground = new SolidColorBrush(Color.FromRgb(163, 179, 193)),
+                FontSize = 16,
+                VerticalAlignment = System.Windows.VerticalAlignment.Center
+            };
+
+            var txtTotalValor = new TextBlock
+            {
+                Text = $"{total:F2}€",
+                Foreground = new SolidColorBrush(Color.FromRgb(102, 192, 244)),
+                FontSize = 22,
+                FontWeight = System.Windows.FontWeights.Bold,
+                VerticalAlignment = System.Windows.VerticalAlignment.Center,
+                Margin = new Thickness(5, 0, 0, 0)
+            };
+
+            totalStack.Children.Add(txtTotalLabel);
+            totalStack.Children.Add(txtTotalValor);
+
+            var saldoStack = new StackPanel 
+            { 
+                Orientation = Orientation.Horizontal, 
+                HorizontalAlignment = System.Windows.HorizontalAlignment.Center 
+            };
+
+            var txtSaldoLabel = new TextBlock
+            {
+                Text = "Tu saldo: ",
+                Foreground = new SolidColorBrush(Color.FromRgb(163, 179, 193)),
+                FontSize = 14,
+                VerticalAlignment = System.Windows.VerticalAlignment.Center
+            };
+
+            var txtSaldoValor = new TextBlock
+            {
+                Text = $"{usuarioActual.Saldo:F2}€",
+                Foreground = usuarioActual.Saldo >= total 
+                    ? new SolidColorBrush(Color.FromRgb(144, 238, 144)) 
+                    : new SolidColorBrush(Color.FromRgb(255, 99, 71)),
+                FontSize = 16,
+                FontWeight = System.Windows.FontWeights.Bold,
+                VerticalAlignment = System.Windows.VerticalAlignment.Center,
+                Margin = new Thickness(5, 0, 0, 0)
+            };
+
+            saldoStack.Children.Add(txtSaldoLabel);
+            saldoStack.Children.Add(txtSaldoValor);
+
+            detallesStack.Children.Add(totalStack);
+            detallesStack.Children.Add(saldoStack);
+
+            if (usuarioActual.Saldo < total)
+            {
+                var txtAdvertencia = new TextBlock
                 {
-                    var usuario = db.Usuarios
-                        .Include(u => u.BibliotecaJuegos)
-                        .FirstOrDefault(u => u.Id == usuarioActual.Id);
+                    Text = "⚠️ Saldo insuficiente",
+                    Foreground = new SolidColorBrush(Color.FromRgb(255, 99, 71)),
+                    FontSize = 13,
+                    FontWeight = System.Windows.FontWeights.Bold,
+                    HorizontalAlignment = System.Windows.HorizontalAlignment.Center,
+                    Margin = new Thickness(0, 10, 0, 0)
+                };
+                detallesStack.Children.Add(txtAdvertencia);
+            }
+
+            detallesBorder.Child = detallesStack;
+
+            var panelBotones = new StackPanel 
+            { 
+                Orientation = Orientation.Horizontal,
+                HorizontalAlignment = System.Windows.HorizontalAlignment.Center,
+                Margin = new Thickness(0, 10, 0, 0)
+            };
+
+            // Botón CANCELAR (más llamativo - verde)
+            var cancelarStyle = new System.Windows.Style(typeof(Button));
+            cancelarStyle.Setters.Add(new Setter(Button.BackgroundProperty, new SolidColorBrush(Color.FromRgb(92, 126, 22))));
+            cancelarStyle.Setters.Add(new Setter(Button.BorderThicknessProperty, new Thickness(0)));
+            
+            var cancelarTemplate = new ControlTemplate(typeof(Button));
+            var cancelarFactory = new FrameworkElementFactory(typeof(Border));
+            cancelarFactory.SetValue(Border.BackgroundProperty, new TemplateBindingExtension(Button.BackgroundProperty));
+            cancelarFactory.SetValue(Border.CornerRadiusProperty, new CornerRadius(6));
+            cancelarFactory.SetValue(Border.PaddingProperty, new Thickness(10));
+            var cancelarContent = new FrameworkElementFactory(typeof(ContentPresenter));
+            cancelarContent.SetValue(ContentPresenter.HorizontalAlignmentProperty, System.Windows.HorizontalAlignment.Center);
+            cancelarContent.SetValue(ContentPresenter.VerticalAlignmentProperty, System.Windows.VerticalAlignment.Center);
+            cancelarFactory.AppendChild(cancelarContent);
+            cancelarTemplate.VisualTree = cancelarFactory;
+            cancelarStyle.Setters.Add(new Setter(Button.TemplateProperty, cancelarTemplate));
+
+            var cancelarTrigger = new Trigger { Property = Button.IsMouseOverProperty, Value = true };
+            cancelarTrigger.Setters.Add(new Setter(Button.BackgroundProperty, new SolidColorBrush(Color.FromRgb(118, 161, 19))));
+            cancelarStyle.Triggers.Add(cancelarTrigger);
+
+            var btnCancelar = new Button
+            {
+                Content = "✖ CANCELAR",
+                Width = 160,
+                Height = 50,
+                Margin = new Thickness(0, 0, 15, 0),
+                Foreground = Brushes.White,
+                FontSize = 15,
+                FontWeight = System.Windows.FontWeights.Bold,
+                Cursor = System.Windows.Input.Cursors.Hand,
+                Style = cancelarStyle
+            };
+
+            // Botón CONFIRMAR (menos llamativo - gris)
+            var confirmarStyle = new System.Windows.Style(typeof(Button));
+            confirmarStyle.Setters.Add(new Setter(Button.BackgroundProperty, new SolidColorBrush(Color.FromRgb(61, 68, 80))));
+            confirmarStyle.Setters.Add(new Setter(Button.BorderThicknessProperty, new Thickness(0)));
+            
+            var confirmarTemplate = new ControlTemplate(typeof(Button));
+            var confirmarFactory = new FrameworkElementFactory(typeof(Border));
+            confirmarFactory.SetValue(Border.BackgroundProperty, new TemplateBindingExtension(Button.BackgroundProperty));
+            confirmarFactory.SetValue(Border.CornerRadiusProperty, new CornerRadius(6));
+            confirmarFactory.SetValue(Border.PaddingProperty, new Thickness(10));
+            var confirmarContent = new FrameworkElementFactory(typeof(ContentPresenter));
+            confirmarContent.SetValue(ContentPresenter.HorizontalAlignmentProperty, System.Windows.HorizontalAlignment.Center);
+            confirmarContent.SetValue(ContentPresenter.VerticalAlignmentProperty, System.Windows.VerticalAlignment.Center);
+            confirmarFactory.AppendChild(confirmarContent);
+            confirmarTemplate.VisualTree = confirmarFactory;
+            confirmarStyle.Setters.Add(new Setter(Button.TemplateProperty, confirmarTemplate));
+            
+            var confirmarTrigger = new Trigger { Property = Button.IsMouseOverProperty, Value = true };
+            confirmarTrigger.Setters.Add(new Setter(Button.BackgroundProperty, new SolidColorBrush(Color.FromRgb(74, 85, 96))));
+            confirmarStyle.Triggers.Add(confirmarTrigger);
+
+            var btnConfirmar = new Button
+            {
+                Content = "Confirmar Pago",
+                Width = 160,
+                Height = 50,
+                Foreground = new SolidColorBrush(Color.FromRgb(163, 179, 193)),
+                FontSize = 13,
+                FontWeight = System.Windows.FontWeights.Normal,
+                Cursor = System.Windows.Input.Cursors.Hand,
+                Style = confirmarStyle
+            };
+
+            btnCancelar.Click += (s, ev) => dialog.Close();
+
+            btnConfirmar.Click += (s, ev) =>
+            {
+                if (usuarioActual.Saldo >= total)
+                {
+                    dialog.Close();
                     
-                    if (usuario != null)
+                    using (var db = new AppDbContext())
                     {
-                        usuario.Saldo -= total;
-                        usuarioActual.Saldo = usuario.Saldo;
+                        var usuario = db.Usuarios
+                            .Include(u => u.BibliotecaJuegos)
+                            .FirstOrDefault(u => u.Id == usuarioActual.Id);
                         
-                        foreach (var item in carrito)
+                        if (usuario != null)
                         {
-                            var juegoCompleto = db.Juegos
-                                .Include(j => j.Valoraciones)
-                                .FirstOrDefault(j => j.Titulo == item.Titulo);
+                            usuario.Saldo -= total;
+                            usuarioActual.Saldo = usuario.Saldo;
                         
-                            if (juegoCompleto != null)
+                            foreach (var item in carrito)
                             {
-                                if (!usuario.BibliotecaJuegos.Any(b => b.JuegoId == juegoCompleto.Id))
+                                var juegoCompleto = db.Juegos
+                                    .Include(j => j.Valoraciones)
+                                    .FirstOrDefault(j => j.Titulo == item.Titulo);
+                            
+                                if (juegoCompleto != null)
                                 {
-                                    var nuevaBiblioteca = new BibliotecaUsuario
+                                    if (!usuario.BibliotecaJuegos.Any(b => b.JuegoId == juegoCompleto.Id))
                                     {
-                                        UsuarioId = usuario.Id,
-                                        JuegoId = juegoCompleto.Id,
-                                        FechaAdquisicion = DateTime.Now
-                                    };
-                                    
-                                    db.BibliotecaUsuarios.Add(nuevaBiblioteca);
-                                    
-                                    if (!bibliotecaJuegos.Any(j => j.Titulo == item.Titulo))
-                                    {
-                                        bibliotecaJuegos.Add(new DatosJuego
+                                        var nuevaBiblioteca = new BibliotecaUsuario
                                         {
-                                            Titulo = item.Titulo,
-                                            Genero = item.Genero,
-                                            Precio = item.Precio,
+                                            UsuarioId = usuario.Id,
                                             JuegoId = juegoCompleto.Id,
-                                            Imagen = juegoCompleto.Imagen,
-                                            ValoracionPromedio = juegoCompleto.ValoracionPromedio,
-                                            TotalValoraciones = juegoCompleto.TotalValoraciones,
-                                            VecesJugadas = juegoCompleto.VecesJugadas,
-                                            EsFavorito = false
-                                        });
-                                    }
-                                    
-                                    var deseo = db.ListasDeseos.FirstOrDefault(l => l.UsuarioId == usuario.Id && l.JuegoId == juegoCompleto.Id);
-                                    if (deseo != null)
-                                    {
-                                        db.ListasDeseos.Remove(deseo);
-                                        var juegoEnDeseos = listaDeseosJuegos.FirstOrDefault(j => j.JuegoId == juegoCompleto.Id);
-                                        if (juegoEnDeseos != null)
+                                            FechaAdquisicion = DateTime.Now
+                                        };
+                                        
+                                        db.BibliotecaUsuarios.Add(nuevaBiblioteca);
+                                        
+                                        if (!bibliotecaJuegos.Any(j => j.Titulo == item.Titulo))
                                         {
-                                            listaDeseosJuegos.Remove(juegoEnDeseos);
+                                            bibliotecaJuegos.Add(new DatosJuego
+                                            {
+                                                Titulo = item.Titulo,
+                                                Genero = item.Genero,
+                                                Precio = item.Precio,
+                                                JuegoId = juegoCompleto.Id,
+                                                Imagen = juegoCompleto.Imagen,
+                                                ValoracionPromedio = juegoCompleto.ValoracionPromedio,
+                                                TotalValoraciones = juegoCompleto.TotalValoraciones,
+                                                VecesJugadas = juegoCompleto.VecesJugadas,
+                                                EsFavorito = false
+                                            });
+                                        }
+                                        
+                                        var deseo = db.ListasDeseos.FirstOrDefault(l => l.UsuarioId == usuario.Id && l.JuegoId == juegoCompleto.Id);
+                                        if (deseo != null)
+                                        {
+                                            db.ListasDeseos.Remove(deseo);
+                                            var juegoEnDeseos = listaDeseosJuegos.FirstOrDefault(j => j.JuegoId == juegoCompleto.Id);
+                                            if (juegoEnDeseos != null)
+                                            {
+                                                listaDeseosJuegos.Remove(juegoEnDeseos);
+                                            }
                                         }
                                     }
                                 }
                             }
+                            
+                            db.SaveChanges();
                         }
-                        
-                        db.SaveChanges();
                     }
+                    
+                    ActualizarSaldoVisual();
+                    GenerarFacturaPDF(new List<DatosJuego>(carrito), total);
+
+                    carrito.Clear();
+                    ActualizarVistaCarrito();
+                    MessageBox.Show("¡Compra realizada con éxito! Los juegos se han añadido a tu biblioteca.", "Compra Exitosa", MessageBoxButton.OK, MessageBoxImage.Information);
+                    Nav_Biblioteca_Click(null, null);
                 }
-                
-                ActualizarSaldoVisual();
+                else
+                {
+                    dialog.Close();
+                    MessageBox.Show("Saldo insuficiente. Por favor, recarga tu cartera antes de continuar.", "Saldo Insuficiente", MessageBoxButton.OK, MessageBoxImage.Warning);
+                }
+            };
 
-                GenerarFacturaPDF(new List<DatosJuego>(carrito), total);
+            panelBotones.Children.Add(btnCancelar);
+            panelBotones.Children.Add(btnConfirmar);
 
-                carrito.Clear();
-                ActualizarVistaCarrito();
-                MessageBox.Show("¡Compra realizada!");
-                Nav_Biblioteca_Click(null, null);
-            }
-            else
-            {
-                MessageBox.Show("Saldo insuficiente.");
-            }
+            stackPanel.Children.Add(iconoTexto);
+            stackPanel.Children.Add(txtTitulo);
+            stackPanel.Children.Add(txtMensaje);
+            stackPanel.Children.Add(detallesBorder);
+            stackPanel.Children.Add(panelBotones);
+
+            mainBorder.Child = stackPanel;
+            dialog.Content = mainBorder;
+            
+            dialog.ShowDialog();
         }
 
         #endregion
@@ -1418,7 +1651,7 @@ namespace TrabajoInterfacesFinal
                     ("➕", "Añadir Juegos", "Desde la página de detalles de cualquier juego en la tienda, haz clic en 'AÑADIR A LISTA DE DESEOS'. El juego se guardará automáticamente aquí."),
                     ("👁️", "Ver Detalles", "Haz clic en 'VER' para acceder a la información completa del juego, incluyendo descripción, valoraciones y precio actual."),
                     ("🗑️", "Eliminar de la Lista", "Si ya no te interesa un juego, usa el botón 'ELIMINAR' para quitarlo de tu lista de deseos. Esta acción es reversible: puedes añadirlo nuevamente cuando quieras."),
-                    ("🛒", "Comprar Después", "Cuando decidas comprar un juego de tu lista de deseos, simplemente ve a sus detalles y añádelo al carrito. Se eliminará automáticamente de la lista al completar la compra."),
+                    ("🛒", "Comprar Después", "Cuando decidas comprar un juego de tu lista de deseos, simplemente ve a sus detalles y añade al carrito. Se eliminará automáticamente de la lista al completar la compra."),
                     ("📋", "Organización", "La lista de deseos te ayuda a organizar tus compras futuras y no olvidar los juegos que te interesan. ¡Mantenla actualizada!")
                 }
             );
@@ -1578,7 +1811,7 @@ namespace TrabajoInterfacesFinal
             var cerrarStyle = new System.Windows.Style(typeof(Button));
             cerrarStyle.Setters.Add(new Setter(Button.BackgroundProperty, new SolidColorBrush(Color.FromRgb(92, 126, 22))));
             cerrarStyle.Setters.Add(new Setter(Button.BorderThicknessProperty, new Thickness(0)));
-
+            
             var cerrarTemplate = new ControlTemplate(typeof(Button));
             var cerrarFactory = new FrameworkElementFactory(typeof(Border));
             cerrarFactory.SetValue(Border.BackgroundProperty, new TemplateBindingExtension(Button.BackgroundProperty));
@@ -1719,6 +1952,8 @@ namespace TrabajoInterfacesFinal
         // =========================================================
         // 11. EVENTO JUGAR Y VALORACIONES
         // =========================================================
+        #region Jugar y Valoraciones
+        
         private void BtnJugarBiblioteca_Click(object sender, RoutedEventArgs e)
         {
             if (sender is Button btn && btn.DataContext is DatosJuego juego)
@@ -1757,8 +1992,8 @@ namespace TrabajoInterfacesFinal
                         MessageBox.Show($"{juego.Titulo} eliminado de favoritos", "Favorito eliminado", MessageBoxButton.OK, MessageBoxImage.Information);
                     }
                     else
-                    {
-                        var nuevoFavorito = new JuegoFavorito
+ {
+                                               var nuevoFavorito = new JuegoFavorito
                         {
                             UsuarioId = usuarioActual.Id,
                             JuegoId = juego.JuegoId,
@@ -1772,11 +2007,6 @@ namespace TrabajoInterfacesFinal
                     db.SaveChanges();
                 }
             }
-        }
-
-        private void Button_Click(object sender, RoutedEventArgs e)
-        {
-
         }
 
         private void BtnValorarBiblioteca_Click(object sender, RoutedEventArgs e)
@@ -1889,6 +2119,13 @@ namespace TrabajoInterfacesFinal
                         juego.ValoracionPromedio = juegoDb.ValoracionPromedio;
                         juego.TotalValoraciones = juegoDb.TotalValoraciones;
 
+                        var juegoEnBiblioteca = bibliotecaJuegos.FirstOrDefault(j => j.JuegoId == juego.JuegoId);
+                        if (juegoEnBiblioteca != null)
+                        {
+                            juegoEnBiblioteca.ValoracionPromedio = juego.ValoracionPromedio;
+                            juegoEnBiblioteca.TotalValoraciones = juego.TotalValoraciones;
+                        }
+
                         var juegoEnCatalogo = catalogoCompleto.FirstOrDefault(j => j.Titulo == juego.Titulo);
                         if (juegoEnCatalogo != null)
                         {
@@ -1968,6 +2205,8 @@ namespace TrabajoInterfacesFinal
                 }
             }
         }
+        
+        #endregion
     }
 
     // CLASES AUXILIARES

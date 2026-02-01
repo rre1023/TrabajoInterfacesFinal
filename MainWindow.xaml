@@ -981,21 +981,72 @@ Cursor="Hand">
                             </StackPanel>
                                             
                             <!-- Botones de acción -->
-                                            <StackPanel Orientation="Horizontal" 
-                                                        Grid.Column="2" 
+                                            <StackPanel Grid.Column="2" 
                                                         VerticalAlignment="Center">
-                                                <Button Content="VER"
-                                                        Padding="20,10"
-                                                        Margin="0,0,10,0"
-                                                        Background="#3d4450"
-                                                        Foreground="#66c0f4"
+                                                <!-- Botón JUGAR -->
+                                                <Button Content="🎮 JUGAR"
+                                                        Padding="25,12"
+                                                        Margin="0,0,0,8"
+                                                        Background="#5c7e10"
+                                                        Foreground="White"
                                                         FontWeight="Bold"
-                                                        FontSize="13"
+                                                        FontSize="14"
                                                         BorderThickness="0"
                                                         Cursor="Hand"
-                                                        Click="BtnVerDesdeBiblioteca_Click">
+                                                        Click="BtnJugarBiblioteca_Click">
                                                     <Button.Style>
                                                         <Style TargetType="Button">
+                                                            <Setter Property="Template">
+                                                                <Setter.Value>
+                                                                    <ControlTemplate TargetType="Button">
+                                                                        <Border Background="{TemplateBinding Background}" 
+                                                                                CornerRadius="4"
+                                                                                Padding="{TemplateBinding Padding}">
+                                                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                                        </Border>
+                                                                    </ControlTemplate>
+                                                                </Setter.Value>
+                                                            </Setter>
+                                                            <Style.Triggers>
+                                                                <Trigger Property="IsMouseOver" Value="True">
+                                                                    <Setter Property="Background" Value="#76a113"/>
+                                                                </Trigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </Button.Style>
+                                                </Button>
+                                                
+                                                <!-- Botón FAVORITO -->
+                                                <Button Padding="25,12"
+                                                        Margin="0,0,0,8"
+                                                        FontWeight="Bold"
+                                                        FontSize="14"
+                                                        BorderThickness="0"
+                                                        Cursor="Hand"
+                                                        Click="BtnFavoritoBiblioteca_Click">
+                                                    <Button.Content>
+                                                        <StackPanel Orientation="Horizontal">
+                                                            <TextBlock FontSize="16" Margin="0,0,8,0" VerticalAlignment="Center">
+                                                                <TextBlock.Style>
+                                                                    <Style TargetType="TextBlock">
+                                                                        <Setter Property="Text" Value="☆"/>
+                                                                        <Setter Property="Foreground" Value="White"/>
+                                                                        <Style.Triggers>
+                                                                            <DataTrigger Binding="{Binding EsFavorito}" Value="True">
+                                                                                <Setter Property="Text" Value="★"/>
+                                                                                <Setter Property="Foreground" Value="Gold"/>
+                                                                            </DataTrigger>
+                                                                        </Style.Triggers>
+                                                                    </Style>
+                                                                </TextBlock.Style>
+                                                            </TextBlock>
+                                                            <TextBlock Text="FAVORITO" VerticalAlignment="Center"/>
+                                                        </StackPanel>
+                                                    </Button.Content>
+                                                    <Button.Style>
+                                                        <Style TargetType="Button">
+                                                            <Setter Property="Background" Value="#3d4450"/>
+                                                            <Setter Property="Foreground" Value="White"/>
                                                             <Setter Property="Template">
                                                                 <Setter.Value>
                                                                     <ControlTemplate TargetType="Button">
@@ -1011,19 +1062,25 @@ Cursor="Hand">
                                                                 <Trigger Property="IsMouseOver" Value="True">
                                                                     <Setter Property="Background" Value="#4a5560"/>
                                                                 </Trigger>
+                                                                <DataTrigger Binding="{Binding EsFavorito}" Value="True">
+                                                                    <Setter Property="Background" Value="#d4a90a"/>
+                                                                    <Setter Property="Foreground" Value="White"/>
+                                                                </DataTrigger>
                                                             </Style.Triggers>
                                                         </Style>
                                                     </Button.Style>
                                                 </Button>
-                                                <Button Content="🗑 ELIMINAR"
-                                                        Padding="15,10"
-                                                        Background="#c94f4f"
-                                                        Foreground="White"
+                                                
+                                                <!-- Botón VALORAR -->
+                                                <Button Content="⭐ VALORAR"
+                                                        Padding="25,12"
+                                                        Background="#2a475e"
+                                                        Foreground="#66c0f4"
                                                         FontWeight="Bold"
-                                                        FontSize="12"
+                                                        FontSize="14"
                                                         BorderThickness="0"
                                                         Cursor="Hand"
-                                                        Click="BtnEliminarBiblioteca_Click">
+                                                        Click="BtnValorarBiblioteca_Click">
                                                     <Button.Style>
                                                         <Style TargetType="Button">
                                                             <Setter Property="Template">
@@ -1039,7 +1096,8 @@ Cursor="Hand">
                                                             </Setter>
                                                             <Style.Triggers>
                                                                 <Trigger Property="IsMouseOver" Value="True">
-                                                                    <Setter Property="Background" Value="#d63939"/>
+                                                                    <Setter Property="Background" Value="#3d5a6e"/>
+                                                                    <Setter Property="Foreground" Value="#90c9f4"/>
                                                                 </Trigger>
                                                             </Style.Triggers>
                                                         </Style>
