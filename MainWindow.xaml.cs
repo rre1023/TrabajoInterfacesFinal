@@ -289,7 +289,8 @@ namespace TrabajoInterfacesFinal
                                 Imagen = bibItem.Juego.Imagen,
                                 ValoracionPromedio = bibItem.Juego.ValoracionPromedio,
                                 TotalValoraciones = bibItem.Juego.TotalValoraciones,
-                                Valoracion = valoracionUsuario?.Puntuacion ?? 0
+                                Valoracion = valoracionUsuario?.Puntuacion ?? 0,
+                                VecesJugadas = bibItem.Juego.VecesJugadas
                             });
                         }
                         
@@ -918,7 +919,8 @@ namespace TrabajoInterfacesFinal
                                             JuegoId = juegoCompleto.Id,
                                             Imagen = juegoCompleto.Imagen,
                                             ValoracionPromedio = juegoCompleto.ValoracionPromedio,
-                                            TotalValoraciones = juegoCompleto.TotalValoraciones
+                                            TotalValoraciones = juegoCompleto.TotalValoraciones,
+                                            VecesJugadas = juegoCompleto.VecesJugadas
                                         });
                                     }
                                 }
@@ -1139,6 +1141,18 @@ namespace TrabajoInterfacesFinal
         {
             if (sender is Button btn && btn.DataContext is DatosJuego juego)
             {
+                using (var db = new AppDbContext())
+                {
+                    var juegoDb = db.Juegos.FirstOrDefault(j => j.Id == juego.JuegoId);
+                    if (juegoDb != null)
+                    {
+                        juegoDb.VecesJugadas++;
+                        db.SaveChanges();
+                        
+                        juego.VecesJugadas = juegoDb.VecesJugadas;
+                    }
+                }
+                
                 MessageBox.Show($"¡Lanzando {juego.Titulo}...", "JUGANDO", MessageBoxButton.OK, MessageBoxImage.Information);
             }
         }
@@ -1348,6 +1362,20 @@ namespace TrabajoInterfacesFinal
         public int JuegoId { get; set; }
         public string Imagen { get; set; }
 
+        private int vecesJugadas = 0;
+        public int VecesJugadas
+        {
+            get => vecesJugadas;
+            set
+            {
+                if (vecesJugadas != value)
+                {
+                    vecesJugadas = value;
+                    OnPropertyChanged(nameof(VecesJugadas));
+                }
+            }
+        }
+
         private int valoracion = 0;
         public int Valoracion
         {
@@ -1415,6 +1443,7 @@ namespace TrabajoInterfacesFinal
         public string Genero { get; set; }
         public string Descripcion { get; set; }
         public string Imagen { get; set; }
+        public int VecesJugadas { get; set; } = 0;
         
         public List<Valoracion> Valoraciones { get; set; } = new List<Valoracion>();
 
