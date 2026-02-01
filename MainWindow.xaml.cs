@@ -68,6 +68,7 @@ namespace TrabajoInterfacesFinal
         List<DatosJuego> catalogoCompleto = new List<DatosJuego>();
         DatosJuego juegoActualEnDetalle = new DatosJuego();
         private ObservableCollection<DatosJuego> bibliotecaJuegos = new ObservableCollection<DatosJuego>();
+        private bool filtroFavoritosActivo = false;
 
 
         Usuario usuarioActual;
@@ -207,9 +208,14 @@ namespace TrabajoInterfacesFinal
                         {
                             juego.Valoracion = valoracionUsuario.Puntuacion;
                         }
+                        
+                        var esFavorito = db.JuegosFavoritos.Any(f => f.UsuarioId == usuarioActual.Id && f.JuegoId == juego.JuegoId);
+                        juego.EsFavorito = esFavorito;
                     }
                 }
             }
+            
+            AplicarFiltroBiblioteca();
         }
 
         private void Nav_Perfil_Click(object sender, RoutedEventArgs e)
@@ -248,6 +254,31 @@ namespace TrabajoInterfacesFinal
             ActualizarVistaCarrito();
         }
 
+        private void BtnFiltroFavoritos_Click(object sender, RoutedEventArgs e)
+        {
+            filtroFavoritosActivo = !filtroFavoritosActivo;
+            
+            if (sender is Button btn)
+            {
+                btn.Tag = filtroFavoritosActivo ? "True" : "False";
+            }
+            
+            AplicarFiltroBiblioteca();
+        }
+
+        private void AplicarFiltroBiblioteca()
+        {
+            if (filtroFavoritosActivo)
+            {
+                var favoritosTemp = bibliotecaJuegos.Where(j => j.EsFavorito).ToList();
+                listaBiblioteca.ItemsSource = new ObservableCollection<DatosJuego>(favoritosTemp);
+            }
+            else
+            {
+                listaBiblioteca.ItemsSource = bibliotecaJuegos;
+            }
+        }
+
         #endregion
 
         // =========================================================
@@ -279,6 +310,7 @@ namespace TrabajoInterfacesFinal
                         foreach (var bibItem in usuario.BibliotecaJuegos)
                         {
                             var valoracionUsuario = bibItem.Juego.Valoraciones.FirstOrDefault(v => v.UsuarioId == usuario.Id);
+                            var esFavorito = db.JuegosFavoritos.Any(f => f.UsuarioId == usuario.Id && f.JuegoId == bibItem.Juego.Id);
                             
                             bibliotecaJuegos.Add(new DatosJuego
                             {
@@ -290,7 +322,8 @@ namespace TrabajoInterfacesFinal
                                 ValoracionPromedio = bibItem.Juego.ValoracionPromedio,
                                 TotalValoraciones = bibItem.Juego.TotalValoraciones,
                                 Valoracion = valoracionUsuario?.Puntuacion ?? 0,
-                                VecesJugadas = bibItem.Juego.VecesJugadas
+                                VecesJugadas = bibItem.Juego.VecesJugadas,
+                                EsFavorito = esFavorito
                             });
                         }
                         
@@ -697,6 +730,11 @@ namespace TrabajoInterfacesFinal
                 if (coincideNombre && coincideGenero) resultados.Add(juego);
             }
 
+            if (filtroFavoritosActivo)
+            {
+                resultados = resultados.Where(j => j.EsFavorito).ToList();
+            }
+
             RenderizarJuegos(resultados);
         }
 
@@ -920,7 +958,8 @@ namespace TrabajoInterfacesFinal
                                             Imagen = juegoCompleto.Imagen,
                                             ValoracionPromedio = juegoCompleto.ValoracionPromedio,
                                             TotalValoraciones = juegoCompleto.TotalValoraciones,
-                                            VecesJugadas = juegoCompleto.VecesJugadas
+                                            VecesJugadas = juegoCompleto.VecesJugadas,
+                                            EsFavorito = false
                                         });
                                     }
                                 }
@@ -1157,6 +1196,41 @@ namespace TrabajoInterfacesFinal
             }
         }
 
+        private void BtnFavoritoBiblioteca_Click(object sender, RoutedEventArgs e)
+        {
+            if (usuarioActual == null) return;
+
+            if (sender is Button btn && btn.DataContext is DatosJuego juego)
+            {
+                using (var db = new AppDbContext())
+                {
+                    var favoritoExistente = db.JuegosFavoritos
+                        .FirstOrDefault(f => f.UsuarioId == usuarioActual.Id && f.JuegoId == juego.JuegoId);
+
+                    if (favoritoExistente != null)
+                    {
+                        db.JuegosFavoritos.Remove(favoritoExistente);
+                        juego.EsFavorito = false;
+                        MessageBox.Show($"{juego.Titulo} eliminado de favoritos", "Favorito eliminado", MessageBoxButton.OK, MessageBoxImage.Information);
+                    }
+                    else
+                    {
+                        var nuevoFavorito = new JuegoFavorito
+                        {
+                            UsuarioId = usuarioActual.Id,
+                            JuegoId = juego.JuegoId,
+                            FechaAgregado = DateTime.Now
+                        };
+                        db.JuegosFavoritos.Add(nuevoFavorito);
+                        juego.EsFavorito = true;
+                        MessageBox.Show($"{juego.Titulo} añadido a favoritos", "Favorito añadido", MessageBoxButton.OK, MessageBoxImage.Information);
+                    }
+
+                    db.SaveChanges();
+                }
+            }
+        }
+
         private void Button_Click(object sender, RoutedEventArgs e)
         {
 
@@ -1376,6 +1450,20 @@ namespace TrabajoInterfacesFinal
             }
         }
 
+        private bool esFavorito = false;
+        public bool EsFavorito
+        {
+            get => esFavorito;
+            set
+            {
+                if (esFavorito != value)
+                {
+                    esFavorito = value;
+                    OnPropertyChanged(nameof(EsFavorito));
+                }
+            }
+        }
+
         private int valoracion = 0;
         public int Valoracion
         {
@@ -1446,6 +1534,7 @@ namespace TrabajoInterfacesFinal
         public int VecesJugadas { get; set; } = 0;
         
         public List<Valoracion> Valoraciones { get; set; } = new List<Valoracion>();
+        public List<JuegoFavorito> Favoritos { get; set; } = new List<JuegoFavorito>();
 
         public double ValoracionPromedio
         {
@@ -1490,6 +1579,17 @@ namespace TrabajoInterfacesFinal
         public Juego Juego { get; set; }
     }
 
+    public class JuegoFavorito
+    {
+        public int Id { get; set; }
+        public int UsuarioId { get; set; }
+        public int JuegoId { get; set; }
+        public DateTime FechaAgregado { get; set; }
+        
+        public Usuario Usuario { get; set; }
+        public Juego Juego { get; set; }
+    }
+
     public class MetodoPago
     {
         public int Id { get; set; }
@@ -1517,6 +1617,7 @@ namespace TrabajoInterfacesFinal
         public DbSet<Juego> Juegos { get; set; }
         public DbSet<Valoracion> Valoraciones { get; set; }
         public DbSet<BibliotecaUsuario> BibliotecaUsuarios { get; set; }
+        public DbSet<JuegoFavorito> JuegosFavoritos { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder options)
         {
@@ -1569,6 +1670,22 @@ namespace TrabajoInterfacesFinal
 
             modelBuilder.Entity<BibliotecaUsuario>()
                 .HasIndex(b => new { b.UsuarioId, b.JuegoId })
+                .IsUnique();
+
+            modelBuilder.Entity<JuegoFavorito>()
+                .HasOne(f => f.Usuario)
+                .WithMany()
+                .HasForeignKey(f => f.UsuarioId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<JuegoFavorito>()
+                .HasOne(f => f.Juego)
+                .WithMany(j => j.Favoritos)
+                .HasForeignKey(f => f.JuegoId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<JuegoFavorito>()
+                .HasIndex(f => new { f.UsuarioId, f.JuegoId })
                 .IsUnique();
         }
     }

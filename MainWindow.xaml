@@ -642,7 +642,51 @@ Cursor="Hand">
 
                 <Grid x:Name="Grid_Biblioteca" Visibility="Collapsed" Margin="30">
                     <StackPanel>
-                        <TextBlock Text="MIS JUEGOS" FontSize="28" Foreground="White" Margin="0,0,0,20"/>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,20">
+                            <TextBlock Text="MIS JUEGOS" FontSize="28" Foreground="White" VerticalAlignment="Center" Margin="0,0,20,0"/>
+                            <Button x:Name="btnFiltroFavoritos"
+                                    Click="BtnFiltroFavoritos_Click"
+                                    Padding="15,10"
+                                    Cursor="Hand"
+                                    ToolTip="Filtrar por favoritos">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="⭐" FontSize="20" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                                    <TextBlock Text="FAVORITOS" FontSize="13" FontWeight="Bold" VerticalAlignment="Center"/>
+                                </StackPanel>
+                                <Button.Style>
+                                    <Style TargetType="Button">
+                                        <Setter Property="Background" Value="#2a3f5a"/>
+                                        <Setter Property="BorderBrush" Value="#66c0f4"/>
+                                        <Setter Property="BorderThickness" Value="2"/>
+                                        <Setter Property="Foreground" Value="#66c0f4"/>
+                                        <Setter Property="Template">
+                                            <Setter.Value>
+                                                <ControlTemplate TargetType="Button">
+                                                    <Border Background="{TemplateBinding Background}" 
+                                                            BorderBrush="{TemplateBinding BorderBrush}"
+                                                            BorderThickness="{TemplateBinding BorderThickness}"
+                                                            CornerRadius="8"
+                                                            Padding="{TemplateBinding Padding}">
+                                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                    </Border>
+                                                </ControlTemplate>
+                                            </Setter.Value>
+                                        </Setter>
+                                        <Style.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter Property="Background" Value="#3d5a6e"/>
+                                                <Setter Property="BorderBrush" Value="#90c9f4"/>
+                                            </Trigger>
+                                            <Trigger Property="Tag" Value="True">
+                                                <Setter Property="Background" Value="#d4a90a"/>
+                                                <Setter Property="BorderBrush" Value="#FFD700"/>
+                                                <Setter Property="Foreground" Value="White"/>
+                                            </Trigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
+                        </StackPanel>
                         <ListView x:Name="listaBiblioteca"
                   Background="#16202D"
                   BorderThickness="0"
@@ -825,6 +869,43 @@ Cursor="Hand">
                             <StackPanel Orientation="Horizontal" 
                                         Grid.Column="2" 
                                         VerticalAlignment="Center">
+                                <Button Content="⭐"
+                                        Padding="12,8"
+                                        Margin="0,0,10,0"
+                                        Background="Transparent"
+                                        BorderThickness="2"
+                                        Cursor="Hand"
+                                        Click="BtnFavoritoBiblioteca_Click"
+                                        ToolTip="Marcar como favorito">
+                                    <Button.Style>
+                                        <Style TargetType="Button">
+                                            <Setter Property="BorderBrush" Value="#66c0f4"/>
+                                            <Setter Property="Foreground" Value="Gray"/>
+                                            <Setter Property="Template">
+                                                <Setter.Value>
+                                                    <ControlTemplate TargetType="Button">
+                                                        <Border Background="{TemplateBinding Background}" 
+                                                                BorderBrush="{TemplateBinding BorderBrush}"
+                                                                BorderThickness="{TemplateBinding BorderThickness}"
+                                                                CornerRadius="5"
+                                                                Padding="{TemplateBinding Padding}">
+                                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                        </Border>
+                                                    </ControlTemplate>
+                                                </Setter.Value>
+                                            </Setter>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding EsFavorito}" Value="True">
+                                                    <Setter Property="Foreground" Value="Gold"/>
+                                                    <Setter Property="Background" Value="#3d4450"/>
+                                                </DataTrigger>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter Property="Background" Value="#3d4450"/>
+                                                </Trigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Button.Style>
+                                </Button>
                                 <Button Content="VALORAR"
                                         Padding="15,8"
                                         Margin="0,0,10,0"
