@@ -1284,7 +1284,7 @@ namespace TrabajoInterfacesFinal
             {
                 // Guardar en el Escritorio para evitar problemas de permisos
                 string rutaEscritorio = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-                string nombreArchivo = $"Factura_TikTok_{Guid.NewGuid().ToString().Substring(0, 5)}.pdf";
+                string nombreArchivo = $"Factura_Enova_{Guid.NewGuid().ToString().Substring(0, 5)}.pdf";
                 string rutaCompleta = System.IO.Path.Combine(rutaEscritorio, nombreArchivo);
 
                 // CREAR FUENTES (iText 9)
