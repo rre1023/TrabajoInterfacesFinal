@@ -417,6 +417,20 @@ namespace TrabajoInterfacesFinal
 
         private void BtnRegistrar_Click(object sender, RoutedEventArgs e)
         {
+            // Limpiar estilos de error previos
+            if (this.FindName("txtPassRegistro") is PasswordBox passBox)
+            {
+                passBox.BorderBrush = new SolidColorBrush(Color.FromRgb(50, 63, 83));
+            }
+            if (this.FindName("txtPassConfirmarRegistro") is PasswordBox passConfBox)
+            {
+                passConfBox.BorderBrush = new SolidColorBrush(Color.FromRgb(50, 63, 83));
+            }
+            if (this.FindName("txtErrorPassRegistro") is TextBlock txtError)
+            {
+                txtError.Visibility = Visibility.Collapsed;
+            }
+
             string nombre = txtNombreRegistro.Text.Trim();
             string email = txtEmailRegistro.Text.Trim();
             string pass = txtPassRegistro.Password;
@@ -441,14 +455,57 @@ namespace TrabajoInterfacesFinal
                 return;
             }
 
-            if (pass.Length < 4)
+            // Validar contraseña - mínimo 10 caracteres
+            if (pass.Length < 10)
             {
-                lblErrorRegistro.Text = "La contraseña debe tener al menos 4 caracteres";
+                txtPassRegistro.BorderBrush = Brushes.Red;
+                if (this.FindName("txtErrorPassRegistro") is TextBlock txtErr)
+                {
+                    txtErr.Text = "La contraseña debe tener al menos 10 caracteres";
+                    txtErr.Visibility = Visibility.Visible;
+                }
+                return;
+            }
+
+            // Validar que tenga al menos una mayúscula
+            if (!pass.Any(char.IsUpper))
+            {
+                txtPassRegistro.BorderBrush = Brushes.Red;
+                if (this.FindName("txtErrorPassRegistro") is TextBlock txtErr)
+                {
+                    txtErr.Text = "La contraseña debe contener al menos una letra mayúscula";
+                    txtErr.Visibility = Visibility.Visible;
+                }
+                return;
+            }
+
+            // Validar que tenga al menos una minúscula
+            if (!pass.Any(char.IsLower))
+            {
+                txtPassRegistro.BorderBrush = Brushes.Red;
+                if (this.FindName("txtErrorPassRegistro") is TextBlock txtErr)
+                {
+                    txtErr.Text = "La contraseña debe contener al menos una letra minúscula";
+                    txtErr.Visibility = Visibility.Visible;
+                }
+                return;
+            }
+
+            // Validar que tenga al menos un número
+            if (!pass.Any(char.IsDigit))
+            {
+                txtPassRegistro.BorderBrush = Brushes.Red;
+                if (this.FindName("txtErrorPassRegistro") is TextBlock txtErr)
+                {
+                    txtErr.Text = "La contraseña debe contener al menos un número";
+                    txtErr.Visibility = Visibility.Visible;
+                }
                 return;
             }
 
             if (pass != passConfirmar)
             {
+                txtPassConfirmarRegistro.BorderBrush = Brushes.Red;
                 lblErrorRegistro.Text = "Las contraseñas no coinciden";
                 return;
             }
@@ -1422,7 +1479,6 @@ namespace TrabajoInterfacesFinal
 
         private void BtnGuardarMetodo_Click(object sender, RoutedEventArgs e)
         {
-            // Limpiar estilos de error previos
             txtDatoNuevo.BorderBrush = new SolidColorBrush(Color.FromRgb(58, 74, 90));
             if (this.FindName("txtErrorMetodoPago") is TextBlock txtError)
             {
@@ -1431,7 +1487,6 @@ namespace TrabajoInterfacesFinal
 
             string dato = txtDatoNuevo.Text.Trim();
 
-            // Validar que tenga exactamente 16 dígitos
             if (dato.Length != 16)
             {
                 txtDatoNuevo.BorderBrush = Brushes.Red;
@@ -1443,7 +1498,6 @@ namespace TrabajoInterfacesFinal
                 return;
             }
 
-            // Validar que todos sean dígitos numéricos
             if (!dato.All(char.IsDigit))
             {
                 txtDatoNuevo.BorderBrush = Brushes.Red;
@@ -2001,7 +2055,7 @@ namespace TrabajoInterfacesFinal
                         MessageBox.Show($"{juego.Titulo} eliminado de favoritos", "Favorito eliminado", MessageBoxButton.OK, MessageBoxImage.Information);
                     }
                     else
- {
+                    {
                                                var nuevoFavorito = new JuegoFavorito
                         {
                             UsuarioId = usuarioActual.Id,

@@ -91,10 +91,19 @@
                 <TextBox x:Name="txtEmailRegistro" Height="35" Margin="0,5,0,15" Background="#323f53" Foreground="White" BorderThickness="0" Padding="5"/>
 
                 <TextBlock Text="CONTRASEÑA" Foreground="#1999ff" FontWeight="Bold" FontSize="12"/>
-                <PasswordBox x:Name="txtPassRegistro" Height="35" Margin="0,5,0,15" Background="#323f53" Foreground="White" BorderThickness="0" Padding="5"/>
+                <PasswordBox x:Name="txtPassRegistro" Height="35" Margin="0,5,0,5" Background="#323f53" Foreground="White" BorderBrush="#323f53" BorderThickness="1" Padding="5"/>
+                
+                <!-- Mensaje de error de validación de contraseña -->
+                <TextBlock x:Name="txtErrorPassRegistro"
+                           Text="La contraseña debe tener al menos 10 caracteres"
+                           Foreground="#ff6347"
+                           FontSize="11"
+                           Margin="0,0,0,10"
+                           TextWrapping="Wrap"
+                           Visibility="Collapsed"/>
 
                 <TextBlock Text="CONFIRMAR CONTRASEÑA" Foreground="#1999ff" FontWeight="Bold" FontSize="12"/>
-                <PasswordBox x:Name="txtPassConfirmarRegistro" Height="35" Margin="0,5,0,25" Background="#323f53" Foreground="White" BorderThickness="0" Padding="5"/>
+                <PasswordBox x:Name="txtPassConfirmarRegistro" Height="35" Margin="0,5,0,25" Background="#323f53" Foreground="White" BorderBrush="#323f53" BorderThickness="1" Padding="5"/>
 
                 <Button Content="CREAR CUENTA" Click="BtnRegistrar_Click" Height="45" Style="{StaticResource BotonVerde}"/>
 
