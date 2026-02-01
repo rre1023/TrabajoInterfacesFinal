@@ -1009,110 +1009,6 @@ namespace TrabajoInterfacesFinal
             }
         }
 
-        private void BtnVerDesdeBiblioteca_Click(object sender, RoutedEventArgs e)
-        {
-            if (sender is Button btn && btn.DataContext is DatosJuego datos)
-            {
-                using (var db = new AppDbContext())
-                {
-                    var juegoCompleto = db.Juegos.Include(j => j.Valoraciones).FirstOrDefault(j => j.Id == datos.JuegoId);
-                    if (juegoCompleto != null)
-                    {
-                        juegoActualEnDetalle = new DatosJuego 
-                        { 
-                            Titulo = datos.Titulo,
-                            Precio = datos.Precio,
-                            Genero = datos.Genero,
-                            JuegoId = juegoCompleto.Id,
-                            ValoracionPromedio = juegoCompleto.ValoracionPromedio,
-                            TotalValoraciones = juegoCompleto.TotalValoraciones
-                        };
-                        
-                        if (usuarioActual != null)
-                        {
-                            var valoracionUsuario = juegoCompleto.Valoraciones.FirstOrDefault(v => v.UsuarioId == usuarioActual.Id);
-                            if (valoracionUsuario != null)
-                            {
-                                juegoActualEnDetalle.Valoracion = valoracionUsuario.Puntuacion;
-                            }
-                        }
-                        
-                        panelEstrellasDetalle.DataContext = juegoActualEnDetalle;
-                        
-                        txtDetalleTitulo.Text = juegoCompleto.Titulo;
-                        txtDetallePrecio.Text = juegoCompleto.Precio + "€";
-                        txtDetalleDescripcion.Text = juegoCompleto.Descripcion ?? "No hay descripción disponible.";
-
-                        if (!string.IsNullOrEmpty(juegoCompleto.Imagen))
-                        {
-                            try
-                            {
-                                string directorioBase = AppDomain.CurrentDomain.BaseDirectory;
-                                string rutaCompleta = System.IO.Path.Combine(directorioBase, juegoCompleto.Imagen);
-                                
-                                if (File.Exists(rutaCompleta))
-                                {
-                                    imgDetalleJuego.Source = new System.Windows.Media.Imaging.BitmapImage(new Uri(rutaCompleta, UriKind.Absolute));
-                                    borderDetalleImagen.Background = Brushes.Black;
-                                }
-                                else
-                                {
-                                    imgDetalleJuego.Source = null;
-                                    borderDetalleImagen.Background = Brushes.DarkRed;
-                                }
-                            }
-                            catch
-                            {
-                                imgDetalleJuego.Source = null;
-                                borderDetalleImagen.Background = Brushes.DarkOrange;
-                            }
-                        }
-                        else
-                        {
-                            imgDetalleJuego.Source = null;
-                            borderDetalleImagen.Background = Brushes.Black;
-                        }
-                        
-                        OcultarTodas();
-                        Grid_Detalle.Visibility = Visibility.Visible;
-                    }
-                }
-            }
-        }
-
-        private void BtnEliminarBiblioteca_Click(object sender, RoutedEventArgs e)
-        {
-            if (usuarioActual == null) return;
-
-            if (sender is Button btn && btn.DataContext is DatosJuego juego)
-            {
-                var resultado = MessageBox.Show(
-                    $"¿Estás seguro de que deseas eliminar '{juego.Titulo}' de tu biblioteca?\n\nEsta acción no se puede deshacer y perderás acceso al juego.",
-                    "Confirmar eliminación",
-                    MessageBoxButton.YesNo,
-                    MessageBoxImage.Warning
-                );
-
-                if (resultado == MessageBoxResult.Yes)
-                {
-                    using (var db = new AppDbContext())
-                    {
-                        var bibliotecaItem = db.BibliotecaUsuarios
-                            .FirstOrDefault(b => b.UsuarioId == usuarioActual.Id && b.JuegoId == juego.JuegoId);
-
-                        if (bibliotecaItem != null)
-                        {
-                            db.BibliotecaUsuarios.Remove(bibliotecaItem);
-                            db.SaveChanges();
-
-                            bibliotecaJuegos.Remove(juego);
-                            MessageBox.Show($"{juego.Titulo} eliminado de tu biblioteca", "Eliminado", MessageBoxButton.OK, MessageBoxImage.Information);
-                        }
-                    }
-                }
-            }
-        }
-
         #endregion
 
         // =========================================================
@@ -1528,6 +1424,23 @@ namespace TrabajoInterfacesFinal
             );
         }
 
+        private void BtnAyudaPerfil_Click(object sender, RoutedEventArgs e)
+        {
+            MostrarVentanaAyuda(
+                "Guía del Perfil",
+                new List<(string icono, string titulo, string descripcion)>
+                {
+                    ("👤", "Información de Cuenta", "Aquí puedes modificar tu nombre de usuario y correo electrónico. Los cambios se guardan haciendo clic en el botón 'GUARDAR CAMBIOS'."),
+                    ("📊", "Estadísticas Personales", "Visualiza tus estadísticas gaming: cantidad de juegos en tu biblioteca y número total de valoraciones que has realizado."),
+                    ("💳", "Cartera Digital", "Gestiona tu saldo para realizar compras. Puedes ver tu saldo disponible en todo momento, facilitando el control de tus finanzas en la plataforma."),
+                    ("💰", "Recargar Saldo", "Añade fondos a tu cartera digital seleccionando la cantidad deseada y un método de pago guardado. El dinero estará disponible inmediatamente para tus compras."),
+                    ("💳", "Métodos de Pago", "Guarda tus métodos de pago favoritos (tarjetas, Google Pay, tarjetas prepago) para hacer recargas más rápidas. Todos tus datos se almacenan de forma segura."),
+                    ("✏️", "Actualizar Datos", "Puedes actualizar tu información de contacto en cualquier momento. Es importante mantener tu correo actualizado para recibir notificaciones importantes."),
+                    ("🔒", "Seguridad", "Tu información personal y métodos de pago están protegidos. Solo tú tienes acceso a tu perfil mediante tu contraseña personal.")
+                }
+            );
+        }
+
         private void MostrarVentanaAyuda(string titulo, List<(string icono, string titulo, string descripcion)> contenidos)
         {
             var dialog = new Window
@@ -1552,7 +1465,6 @@ namespace TrabajoInterfacesFinal
 
             var mainStack = new StackPanel { Margin = new Thickness(0) };
 
-            // Encabezado
             var headerBorder = new Border
             {
                 Background = new SolidColorBrush(Color.FromRgb(42, 71, 94)),
@@ -1583,7 +1495,6 @@ namespace TrabajoInterfacesFinal
             headerStack.Children.Add(txtTitulo);
             headerBorder.Child = headerStack;
 
-            // Contenido scrollable
             var scrollViewer = new ScrollViewer
             {
                 VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
@@ -1647,7 +1558,6 @@ namespace TrabajoInterfacesFinal
 
             scrollViewer.Content = contentStack;
 
-            // Pie con botón cerrar
             var footerBorder = new Border
             {
                 Background = new SolidColorBrush(Color.FromRgb(27, 40, 56)),
@@ -1700,13 +1610,115 @@ namespace TrabajoInterfacesFinal
             dialog.ShowDialog();
         }
 
+        private void BtnVerDesdeBiblioteca_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button btn && btn.DataContext is DatosJuego datos)
+            {
+                using (var db = new AppDbContext())
+                {
+                    var juegoCompleto = db.Juegos.Include(j => j.Valoraciones).FirstOrDefault(j => j.Id == datos.JuegoId);
+                    if (juegoCompleto != null)
+                    {
+                        juegoActualEnDetalle = new DatosJuego 
+                        { 
+                            Titulo = datos.Titulo,
+                            Precio = datos.Precio,
+                            Genero = datos.Genero,
+                            JuegoId = juegoCompleto.Id,
+                            ValoracionPromedio = juegoCompleto.ValoracionPromedio,
+                            TotalValoraciones = juegoCompleto.TotalValoraciones
+                        };
+                        
+                        if (usuarioActual != null)
+                        {
+                            var valoracionUsuario = juegoCompleto.Valoraciones.FirstOrDefault(v => v.UsuarioId == usuarioActual.Id);
+                            if (valoracionUsuario != null)
+                            {
+                                juegoActualEnDetalle.Valoracion = valoracionUsuario.Puntuacion;
+                            }
+                        }
+                        
+                        panelEstrellasDetalle.DataContext = juegoActualEnDetalle;
+                        
+                        txtDetalleTitulo.Text = juegoCompleto.Titulo;
+                        txtDetallePrecio.Text = juegoCompleto.Precio + "€";
+                        txtDetalleDescripcion.Text = juegoCompleto.Descripcion ?? "No hay descripción disponible.";
+
+                        if (!string.IsNullOrEmpty(juegoCompleto.Imagen))
+                        {
+                            try
+                            {
+                                string directorioBase = AppDomain.CurrentDomain.BaseDirectory;
+                                string rutaCompleta = System.IO.Path.Combine(directorioBase, juegoCompleto.Imagen);
+                                
+                                if (File.Exists(rutaCompleta))
+                                {
+                                    imgDetalleJuego.Source = new System.Windows.Media.Imaging.BitmapImage(new Uri(rutaCompleta, UriKind.Absolute));
+                                    borderDetalleImagen.Background = Brushes.Black;
+                                }
+                                else
+                                {
+                                    imgDetalleJuego.Source = null;
+                                    borderDetalleImagen.Background = Brushes.DarkRed;
+                                }
+                            }
+                            catch
+                            {
+                                imgDetalleJuego.Source = null;
+                                borderDetalleImagen.Background = Brushes.DarkOrange;
+                            }
+                        }
+                        else
+                        {
+                            imgDetalleJuego.Source = null;
+                            borderDetalleImagen.Background = Brushes.Black;
+                        }
+                        
+                        OcultarTodas();
+                        Grid_Detalle.Visibility = Visibility.Visible;
+                    }
+                }
+            }
+        }
+
+        private void BtnEliminarBiblioteca_Click(object sender, RoutedEventArgs e)
+        {
+            if (usuarioActual == null) return;
+
+            if (sender is Button btn && btn.DataContext is DatosJuego juego)
+            {
+                var resultado = MessageBox.Show(
+                    $"¿Estás seguro de que deseas eliminar '{juego.Titulo}' de tu biblioteca?\n\nEsta acción no se puede deshacer y perderás acceso al juego.",
+                    "Confirmar eliminación",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Warning
+                );
+
+                if (resultado == MessageBoxResult.Yes)
+                {
+                    using (var db = new AppDbContext())
+                    {
+                        var bibliotecaItem = db.BibliotecaUsuarios
+                            .FirstOrDefault(b => b.UsuarioId == usuarioActual.Id && b.JuegoId == juego.JuegoId);
+
+                        if (bibliotecaItem != null)
+                        {
+                            db.BibliotecaUsuarios.Remove(bibliotecaItem);
+                            db.SaveChanges();
+
+                            bibliotecaJuegos.Remove(juego);
+                            MessageBox.Show($"{juego.Titulo} eliminado de tu biblioteca", "Eliminado", MessageBoxButton.OK, MessageBoxImage.Information);
+                        }
+                    }
+                }
+            }
+        }
+
         #endregion
 
         // =========================================================
         // 11. EVENTO JUGAR Y VALORACIONES
         // =========================================================
-        #region Eventos Jugar y Valoraciones
-        
         private void BtnJugarBiblioteca_Click(object sender, RoutedEventArgs e)
         {
             if (sender is Button btn && btn.DataContext is DatosJuego juego)
@@ -1877,13 +1889,6 @@ namespace TrabajoInterfacesFinal
                         juego.ValoracionPromedio = juegoDb.ValoracionPromedio;
                         juego.TotalValoraciones = juegoDb.TotalValoraciones;
 
-                        var juegoEnBiblioteca = bibliotecaJuegos.FirstOrDefault(j => j.JuegoId == juego.JuegoId);
-                        if (juegoEnBiblioteca != null)
-                        {
-                            juegoEnBiblioteca.ValoracionPromedio = juego.ValoracionPromedio;
-                            juegoEnBiblioteca.TotalValoraciones = juego.TotalValoraciones;
-                        }
-
                         var juegoEnCatalogo = catalogoCompleto.FirstOrDefault(j => j.Titulo == juego.Titulo);
                         if (juegoEnCatalogo != null)
                         {
@@ -1963,8 +1968,6 @@ namespace TrabajoInterfacesFinal
                 }
             }
         }
-        
-        #endregion
     }
 
     // CLASES AUXILIARES
